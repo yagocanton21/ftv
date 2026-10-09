@@ -7,6 +7,7 @@ import {
   Target,
   Maximize2,
   MinusCircle,
+  Magnet,
 } from 'lucide-react'
 import { useUiStore } from '@/store/uiStore'
 import { activateTool } from '@/services/editorActions'
@@ -32,6 +33,8 @@ const TOOLS: ToolItem[] = [
 
 export function ToolBar() {
   const currentTool = useUiStore((s) => s.tool)
+  const snapToGrid = useUiStore((s) => s.snapToGrid)
+  const toggleSnapToGrid = useUiStore((s) => s.toggleSnapToGrid)
 
   return (
     <aside className="absolute left-4 top-20 z-30 flex flex-col items-center bg-[#121815]/90 backdrop-blur-md border border-[#1f2a24] p-1.5 rounded-2xl shadow-xl space-y-1">
@@ -67,6 +70,27 @@ export function ToolBar() {
           </div>
         )
       })}
+
+      <div className="w-6 h-px bg-[#1f2a24] my-1" />
+
+      {/* Toggle Snap to Grid (Agarrar à grade 0.5m) */}
+      <button
+        onClick={toggleSnapToGrid}
+        title={snapToGrid ? 'Snap à Grade: Ativo (0.5m)' : 'Snap à Grade: Inativo'}
+        className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+          snapToGrid
+            ? 'bg-[#1e3a8a] text-[#60a5fa] border border-[#3b82f6]/50 shadow-md shadow-blue-900/30 font-bold'
+            : 'text-gray-400 hover:text-white hover:bg-[#1a231e]'
+        }`}
+      >
+        <Magnet className="w-4 h-4" />
+        <div className="absolute left-full ml-3 px-2.5 py-1 bg-[#1a231e] border border-[#2b3a31] text-xs text-white rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-lg flex items-center gap-1.5">
+          <span>Snap à Grade (0.5m):</span>
+          <span className={snapToGrid ? 'text-[#60a5fa] font-bold' : 'text-gray-400'}>
+            {snapToGrid ? 'Ligado' : 'Desligado'}
+          </span>
+        </div>
+      </button>
     </aside>
   )
 }

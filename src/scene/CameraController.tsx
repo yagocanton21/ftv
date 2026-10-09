@@ -23,26 +23,40 @@ export function CameraController() {
     const c = controlsRef.current
     if (!c) return
 
-    switch (preset) {
-      case 'top':
-        // Vista superior (2D tática): de cima para baixo
-        void c.setLookAt(0, 24, 0.001, 0, 0, 0, true)
-        break
-      case 'iso':
-        // Vista isométrica padrão
-        void c.setLookAt(14, 12, 14, 0, 0, 0, true)
-        break
-      case 'side':
-        // Vista lateral (visão do banco/árbitro)
-        void c.setLookAt(0, 6, 17, 0, 0.8, 0, true)
-        break
-      case 'end':
-        // Vista de fundo (atrás da quadra / linha de saque)
-        void c.setLookAt(-18, 6, 0, 0, 0.8, 0, true)
-        break
-      case 'free':
-        void c.setLookAt(12, 10, 12, 0, 0, 0, true)
-        break
+    if (preset === 'top') {
+      // Vista superior (2D tática): de cima para baixo
+      // Trava rotação polar e azimutal para manter perspectiva 2D ortogonal estrita
+      c.minPolarAngle = 0
+      c.maxPolarAngle = 0.001
+      c.minAzimuthAngle = 0
+      c.maxAzimuthAngle = 0
+      c.mouseButtons.left = 2 // Panning / Truck no clique esquerdo
+      void c.setLookAt(0, 24, 0.001, 0, 0, 0, true)
+    } else {
+      // Restaura rotação orbital 3D livre
+      c.minPolarAngle = 0
+      c.maxPolarAngle = Math.PI / 2 - 0.05
+      c.minAzimuthAngle = -Infinity
+      c.maxAzimuthAngle = Infinity
+      c.mouseButtons.left = 1 // Orbit / Rotate no clique esquerdo
+
+      switch (preset) {
+        case 'iso':
+          // Vista isométrica padrão
+          void c.setLookAt(14, 12, 14, 0, 0, 0, true)
+          break
+        case 'side':
+          // Vista lateral (visão do banco/árbitro)
+          void c.setLookAt(0, 6, 17, 0, 0.8, 0, true)
+          break
+        case 'end':
+          // Vista de fundo (atrás da quadra / linha de saque)
+          void c.setLookAt(-18, 6, 0, 0, 0.8, 0, true)
+          break
+        case 'free':
+          void c.setLookAt(12, 10, 12, 0, 0, 0, true)
+          break
+      }
     }
     invalidate()
   }

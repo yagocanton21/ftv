@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Sky, ContactShadows } from '@react-three/drei'
 import { useDocumentStore } from '@/store/documentStore'
 import { useSimulationStore } from '@/store/simulationStore'
+import { useUiStore } from '@/store/uiStore'
 import { sceneRefs } from '@/store/sceneRefs'
 import { Court } from './Court'
 import { SceneObjects } from './objects/SceneObjects'
@@ -40,9 +42,20 @@ function SimulationTicker() {
 export function StudioCanvas() {
   const court = useDocumentStore((s) => s.exercise.court)
   const isPlaying = useSimulationStore((s) => s.isPlaying)
+  const isDragging = useUiStore((s) => s.isDragging)
+  const hoveredId = useUiStore((s) => s.hoveredId)
+  const tool = useUiStore((s) => s.tool)
+
+  const cursorClass = isDragging
+    ? 'cursor-grabbing'
+    : hoveredId
+    ? 'cursor-grab'
+    : tool !== 'select'
+    ? 'cursor-crosshair'
+    : 'cursor-default'
 
   return (
-    <div className="w-full h-full relative outline-none select-none">
+    <div className={`w-full h-full relative outline-none select-none ${cursorClass}`}>
       <Canvas
         shadows
         dpr={[1, 1.5]}
@@ -57,13 +70,20 @@ export function StudioCanvas() {
         camera={{ position: [14, 12, 14], fov: 45 }}
         className="w-full h-full"
       >
-        {/* Céu suave de arena de praia ensolarada */}
-        <color attach="background" args={['#8ec5ea']} />
-        <fog attach="fog" args={['#a9d5f2', 45, 110]} />
+        {/* Céu atmosférico de arena de praia ensolarada */}
+        <Sky
+          distance={450000}
+          sunPosition={[16, 26, 14]}
+          turbidity={8}
+          rayleigh={1.2}
+          mieCoefficient={0.005}
+          mieDirectionalG={0.8}
+        />
+        <fog attach="fog" args={['#d4e9f7', 42, 105]} />
 
         {/* Iluminação solar de dia de jogo na praia */}
-        <ambientLight intensity={0.65} color="#ffffff" />
-        <hemisphereLight intensity={0.55} color="#bfe1fa" groundColor="#eed9b7" />
+        <ambientLight intensity={0.6} color="#ffffff" />
+        <hemisphereLight intensity={0.5} color="#bfe1fa" groundColor="#eed9b7" />
         <directionalLight
           position={[16, 26, 14]}
           intensity={1.75}
@@ -82,6 +102,15 @@ export function StudioCanvas() {
         <SceneBridge />
         <SimulationTicker />
         <Court court={court} />
+        <ContactShadows
+          position={[0, 0.015, 0]}
+          opacity={0.55}
+          scale={30}
+          blur={1.6}
+          far={4}
+          resolution={512}
+          color="#382515"
+        />
         <SceneObjects />
         <CameraController />
       </Canvas>

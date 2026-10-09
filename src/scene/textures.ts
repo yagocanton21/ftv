@@ -156,14 +156,38 @@ export function getSandTextures(): SandTextures {
 
 export function getNetTexture() {
   if (netCache) return netCache
-  const size = 64
+  const size = 128
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')!
+  
+  // Fundo 100% transparente
   ctx.clearRect(0, 0, size, size)
+
+  // Corda principal escura (polietileno de alta tenacidade preto)
   ctx.strokeStyle = '#18181b'
-  ctx.lineWidth = 3.5
-  ctx.strokeRect(0, 0, size, size)
+  ctx.lineWidth = 5.5
+  ctx.strokeRect(3, 3, size - 6, size - 6)
+
+  // Realce sutil de iluminação solar na corda
+  ctx.strokeStyle = '#3f3f46'
+  ctx.lineWidth = 1.8
+  ctx.strokeRect(4, 4, size - 8, size - 8)
+
+  // Pequenos nós esféricos nas 4 interseções da malha
+  ctx.fillStyle = '#09090b'
+  const knots: [number, number][] = [
+    [3, 3],
+    [size - 3, 3],
+    [3, size - 3],
+    [size - 3, size - 3],
+  ]
+  for (const [kx, ky] of knots) {
+    ctx.beginPath()
+    ctx.arc(kx, ky, 4.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
   const tex = new THREE.CanvasTexture(canvas)
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping
   tex.anisotropy = 8

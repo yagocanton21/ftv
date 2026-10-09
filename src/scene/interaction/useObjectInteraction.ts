@@ -25,6 +25,28 @@ interface DragState {
   moved: boolean
 }
 
+function snap(val: number, step = 0.5) {
+  return Math.round(val / step) * step
+}
+
+function safeSetPointerCapture(e: ThreeEvent<PointerEvent>) {
+  try {
+    const el = (e.nativeEvent?.target as HTMLElement) || (e.target as unknown as HTMLElement)
+    el?.setPointerCapture?.(e.pointerId)
+  } catch {
+    // ignore
+  }
+}
+
+function safeReleasePointerCapture(e: ThreeEvent<PointerEvent>, pointerId: number) {
+  try {
+    const el = (e.nativeEvent?.target as HTMLElement) || (e.target as unknown as HTMLElement)
+    el?.releasePointerCapture?.(pointerId)
+  } catch {
+    // ignore
+  }
+}
+
 /**
  * Seleção + arraste de objetos sobre a areia.
  * - Durante o arraste só o preview (uiStore) muda; o documento recebe UM commit no soltar,
@@ -38,7 +60,7 @@ export function useObjectInteraction(obj: SceneObject) {
     const d = drag.current
     if (!d) return
     e.stopPropagation()
-    ;(e.target as unknown as Captureable).releasePointerCapture(d.pointerId)
+    safeReleasePointerCapture(e, d.pointerId)
     setCameraEnabled(true)
     const ui = useUiStore.getState()
     if (commit && d.moved) {
@@ -78,7 +100,7 @@ export function useObjectInteraction(obj: SceneObject) {
       const start = groundPoint(e)
       if (!start) return
       setCameraEnabled(false)
-      ;(e.target as unknown as Captureable).setPointerCapture(e.pointerId)
+      safeSetPointerCapture(e)
       drag.current = {
         pointerId: e.pointerId,
         start,
@@ -99,11 +121,16 @@ export function useObjectInteraction(obj: SceneObject) {
       if (!d.moved && Math.hypot(dx, dz) < MIN_DRAG_METERS) return
       d.moved = true
       const court = useDocumentStore.getState().exercise.court
+      const ui = useUiStore.getState()
       const preview: Preview = {}
       for (const [id, o] of Object.entries(d.origins)) {
-        preview[id] = { position: clampToPlayArea({ x: o.x + dx, z: o.z + dz }, court) }
+        let pos = clampToPlayArea({ x: o.x + dx, z: o.z + dz }, court)
+        if (ui.snapToGrid) {
+          pos = clampToPlayArea({ x: snap(pos.x, 0.5), z: snap(pos.z, 0.5) }, court)
+        }
+        preview[id] = { position: pos }
       }
-      useUiStore.getState().setPreview(preview)
+      ui.setPreview(preview)
     },
 
     onPointerUp: (e: ThreeEvent<PointerEvent>) => end(e, true),

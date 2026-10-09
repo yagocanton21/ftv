@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import {
   Save,
   Undo2,
@@ -41,8 +41,6 @@ export function TopBar({ onOpenProjects, onOpenShortcuts, onOpenGuide }: TopBarP
   const setCameraPreset = useUiStore((s) => s.setCameraPreset)
   const saveStatus = useUiStore((s) => s.saveStatus)
   const setMode = useUiStore((s) => s.setMode)
-
-  const [exportOpen, setExportOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,59 +168,55 @@ export function TopBar({ onOpenProjects, onOpenShortcuts, onOpenGuide }: TopBarP
         </button>
 
         {/* Dropdown de Exportação */}
-        <div className="relative">
-          <button
-            onClick={() => setExportOpen((v) => !v)}
-            title="Exportar"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1a231e] text-gray-200 hover:bg-[#233028] border border-[#2b3a31] transition-colors"
-          >
-            <Download className="w-3.5 h-3.5 text-[#ff8a3d]" />
-            <span className="hidden sm:inline">Exportar</span>
-          </button>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button
+              title="Exportar"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1a231e] text-gray-200 hover:bg-[#233028] border border-[#2b3a31] transition-colors focus:outline-none"
+            >
+              <Download className="w-3.5 h-3.5 text-[#ff8a3d]" />
+              <span className="hidden sm:inline">Exportar</span>
+            </button>
+          </DropdownMenu.Trigger>
 
-          {exportOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-[#141c18] border border-[#233028] rounded-xl shadow-xl py-1.5 z-50">
-              <button
-                onClick={() => {
-                  setExportOpen(false)
-                  void exportPng()
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-200 hover:bg-[#1f2a24] hover:text-[#c6f432] transition-colors text-left"
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={8}
+              className="w-48 bg-[#141c18] border border-[#233028] rounded-xl shadow-2xl py-1.5 z-50 animate-in fade-in-50"
+            >
+              <DropdownMenu.Item
+                onSelect={() => void exportPng()}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-200 hover:bg-[#1f2a24] hover:text-[#c6f432] focus:bg-[#1f2a24] focus:text-[#c6f432] outline-none cursor-pointer transition-colors"
               >
                 <Image className="w-4 h-4 text-[#ff8a3d]" />
                 Exportar Imagem PNG
-              </button>
-              <button
-                onClick={() => {
-                  setExportOpen(false)
-                  exportJson()
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-200 hover:bg-[#1f2a24] hover:text-[#c6f432] transition-colors text-left"
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onSelect={() => exportJson()}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-200 hover:bg-[#1f2a24] hover:text-[#c6f432] focus:bg-[#1f2a24] focus:text-[#c6f432] outline-none cursor-pointer transition-colors"
               >
                 <FileJson className="w-4 h-4 text-[#38bdf8]" />
                 Exportar Projeto JSON
-              </button>
-              <div className="h-px bg-[#1f2a24] my-1" />
-              <button
-                onClick={() => {
-                  setExportOpen(false)
-                  fileInputRef.current?.click()
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-200 hover:bg-[#1f2a24] hover:text-white transition-colors text-left"
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator className="h-px bg-[#1f2a24] my-1" />
+              <DropdownMenu.Item
+                onSelect={() => fileInputRef.current?.click()}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-200 hover:bg-[#1f2a24] hover:text-white focus:bg-[#1f2a24] focus:text-white outline-none cursor-pointer transition-colors"
               >
                 <Upload className="w-4 h-4 text-gray-400" />
                 Importar Projeto JSON
-              </button>
-            </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,.fs3d.json"
-            onChange={handleImport}
-            className="hidden"
-          />
-        </div>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,.fs3d.json"
+          onChange={handleImport}
+          className="hidden"
+        />
 
         {/* Guia Rápido do Treinador */}
         <button

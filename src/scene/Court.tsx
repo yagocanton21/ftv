@@ -245,7 +245,7 @@ function Net({ court }: { court: CourtSettings }) {
       {/* Malha da rede */}
       <mesh position={[0, H - netDepth / 2, 0]} rotation-y={Math.PI / 2} castShadow raycast={() => null}>
         <planeGeometry args={[netWidth, netDepth]} />
-        <meshStandardMaterial map={tex} color="#18181b" transparent alphaTest={0.4} side={THREE.DoubleSide} />
+        <meshStandardMaterial map={tex} color="#18181b" transparent alphaTest={0.2} side={THREE.DoubleSide} />
       </mesh>
       {/* Faixa superior (branca com reforço) */}
       <mesh position={[0, H - 0.035, 0]} castShadow raycast={() => null}>

@@ -39,6 +39,9 @@ interface UiState {
   /** Ponto pendente clicado na areia aguardando a seleção do fundamento */
   pendingStepPoint: Vec2 | null
   setPendingStepPoint: (pt: Vec2 | null) => void
+  /** Snap ao grid (0.5m) durante posicionamento e arraste */
+  snapToGrid: boolean
+  toggleSnapToGrid: () => void
 }
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -54,6 +57,7 @@ export const useUiStore = create<UiState>()((set) => ({
   lastSavedAt: null,
   recordingPlayerId: null,
   pendingStepPoint: null,
+  snapToGrid: false,
 
   setTool: (tool) => set({ tool }),
   select: (ids) => set({ selectedIds: ids }),
@@ -71,4 +75,5 @@ export const useUiStore = create<UiState>()((set) => ({
   setSaveStatus: (saveStatus, at) => set((s) => ({ saveStatus, lastSavedAt: at ?? s.lastSavedAt })),
   setRecordingPlayerId: (recordingPlayerId) => set({ recordingPlayerId }),
   setPendingStepPoint: (pendingStepPoint) => set({ pendingStepPoint }),
+  toggleSnapToGrid: () => set((s) => ({ snapToGrid: !s.snapToGrid })),
 }))
