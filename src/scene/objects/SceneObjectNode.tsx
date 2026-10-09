@@ -148,12 +148,12 @@ export const SceneObjectNode = memo(function SceneObjectNode({
           </mesh>
         )}
 
-        {/* Ação ativa no momento da timeline (ex: Manchete, Ataque, Chapa) */}
-        <Html position={[0, 2.5, 0]} center distanceFactor={18} style={{ pointerEvents: 'none' }}>
-          <div ref={actionDivRef} style={{ display: 'none' }} className="animate-bounce">
+        {/* Ação ativa no momento da timeline (micro-badge tático, discreto e elegante) */}
+        <Html position={[0, 2.05, 0]} center distanceFactor={12} style={{ pointerEvents: 'none' }}>
+          <div ref={actionDivRef} style={{ display: 'none' }}>
             <span
               ref={actionSpanRef}
-              className="px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-[#ff8a3d] text-white shadow-lg border border-white/30 whitespace-nowrap"
+              className="px-2 py-0.5 rounded-full text-[9px] font-semibold tracking-wide bg-[#0e1411]/85 text-amber-300 border border-amber-500/30 backdrop-blur-md shadow-md whitespace-nowrap"
             />
           </div>
         </Html>
