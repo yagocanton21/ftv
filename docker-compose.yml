@@ -1,0 +1,7 @@
+services:
+  ftv-studio:
+    build: .
+    container_name: ftv_studio
+    restart: always
+    ports:
+      - "8085:80"
