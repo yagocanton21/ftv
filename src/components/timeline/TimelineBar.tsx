@@ -12,6 +12,8 @@ import {
   Zap,
   Footprints,
   X,
+  Minimize2,
+  Maximize2,
 } from 'lucide-react'
 import { useSimulationStore } from '@/store/simulationStore'
 import { useDocumentStore } from '@/store/documentStore'
@@ -44,11 +46,20 @@ export function TimelineBar() {
 
   const selectedIds = useUiStore((s) => s.selectedIds)
   const select = useUiStore((s) => s.select)
+  const recordingPlayerId = useUiStore((s) => s.recordingPlayerId)
   const setRecordingPlayerId = useUiStore((s) => s.setRecordingPlayerId)
   const [collapsed, setCollapsed] = useState(false)
+  const [compactMode, setCompactMode] = useState(false)
   const [showPresetsMenu, setShowPresetsMenu] = useState(false)
 
   const trackRef = useRef<HTMLDivElement>(null)
+
+  // Quando o professor clica para traçar trajeto na areia, recolhe a linha do tempo automaticamente
+  useEffect(() => {
+    if (recordingPlayerId) {
+      setCollapsed(true)
+    }
+  }, [recordingPlayerId])
 
   // Garante animação se o exercício não tiver keyframes
   useEffect(() => {
@@ -233,46 +244,63 @@ export function TimelineBar() {
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 md:left-16 md:right-16 z-40 flex flex-col items-center select-none">
-      {/* Botão de minimizar/expandir barra de animação */}
-      <button
-        onClick={() => setCollapsed((v) => !v)}
-        title={collapsed ? 'Expandir linha do tempo' : 'Recolher linha do tempo'}
-        className="mb-1 px-3 py-1 bg-[#121815]/90 hover:bg-[#1a231e] backdrop-blur-md border border-[#1f2a24] text-[11px] font-semibold text-gray-400 hover:text-white rounded-t-xl flex items-center gap-1.5 transition-colors shadow-lg"
-      >
-        <Clock className="w-3.5 h-3.5 text-[#c6f432]" />
-        <span>Linha do Tempo & Sequências de Treino</span>
-        {collapsed ? <ChevronUp className="w-3.5 h-3.5 ml-1" /> : <ChevronDown className="w-3.5 h-3.5 ml-1" />}
-      </button>
+    <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 w-[94vw] max-w-3xl xl:max-w-4xl z-40 flex flex-col items-center select-none">
+      {/* Botões superiores da barra: recolher/expandir e alternar modo compacto */}
+      <div className="flex items-center gap-1 mb-1">
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          title={collapsed ? 'Expandir linha do tempo' : 'Recolher linha do tempo'}
+          className="px-2.5 py-1 bg-[#121815]/90 hover:bg-[#1a231e] backdrop-blur-md border border-[#1f2a24] text-[11px] font-semibold text-gray-300 hover:text-white rounded-t-xl flex items-center gap-1.5 transition-colors shadow-lg"
+        >
+          <Clock className="w-3.5 h-3.5 text-[#c6f432]" />
+          <span>Linha do Tempo</span>
+          {collapsed ? <ChevronUp className="w-3.5 h-3.5 ml-0.5" /> : <ChevronDown className="w-3.5 h-3.5 ml-0.5" />}
+        </button>
+
+        {!collapsed && (
+          <button
+            onClick={() => setCompactMode((v) => !v)}
+            title={compactMode ? 'Modo Completo (ver fundamentos e passos)' : 'Modo Compacto (economiza espaço na tela)'}
+            className={`px-2 py-1 rounded-t-xl border text-[10px] font-semibold transition-colors flex items-center gap-1 shadow-md ${
+              compactMode
+                ? 'bg-[#c6f432]/15 text-[#c6f432] border-[#c6f432]/40'
+                : 'bg-[#121815]/90 text-gray-400 hover:text-white border-[#1f2a24]'
+            }`}
+          >
+            {compactMode ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
+            <span>{compactMode ? 'Expandir' : 'Compacto'}</span>
+          </button>
+        )}
+      </div>
 
       {!collapsed && (
-        <div className="w-full bg-[#121815]/95 backdrop-blur-md border border-[#1f2a24] rounded-2xl shadow-2xl p-3 flex flex-col gap-2.5">
+        <div className="w-full bg-[#121815]/95 backdrop-blur-md border border-[#1f2a24] rounded-2xl shadow-2xl p-2 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2">
           {/* Linha superior: Controles de reprodução + Construtor de Sequência */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
             {/* Lado Esquerdo: Play, Reset, Tempo, Loop, Velocidade */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={handleTogglePlay}
-                title={isPlaying ? 'Pausar (Espaço)' : 'Reproduzir Simulação 3D para os alunos (Espaço)'}
-                className={`px-3.5 py-2 rounded-xl font-black text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2 ${
+                title={isPlaying ? 'Pausar (Espaço)' : 'Reproduzir Simulação 3D (Espaço)'}
+                className={`px-2.5 py-1 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-1.5 ${
                   isPlaying
                     ? 'bg-[#ff8a3d] text-white hover:bg-[#ea580c] shadow-[#ff8a3d]/20'
                     : 'bg-[#c6f432] text-[#0b0f0d] hover:bg-[#b0de26] shadow-[#c6f432]/20'
                 }`}
               >
-                {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                <span>{isPlaying ? 'Pausar' : 'Demonstrar Treino'}</span>
+                {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                <span>{isPlaying ? 'Pausar' : 'Demonstrar'}</span>
               </button>
 
               <button
                 onClick={reset}
                 title="Voltar ao início (00:00)"
-                className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-[#1a231e] border border-[#1f2a24] transition-colors"
+                className="p-1.5 rounded-xl text-gray-400 hover:text-white hover:bg-[#1a231e] border border-[#1f2a24] transition-colors"
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
 
-              <div className="px-3 py-1 bg-[#161e19] border border-[#1f2a24] rounded-xl font-mono text-xs font-semibold text-white flex items-center gap-1.5 shadow-inner">
+              <div className="px-2 py-0.5 bg-[#161e19] border border-[#1f2a24] rounded-lg font-mono text-[11px] font-semibold text-white flex items-center gap-1 shadow-inner">
                 <span className="text-[#c6f432]">{formatTime(currentTime)}</span>
                 <span className="text-gray-500">/</span>
                 <span className="text-gray-400">{formatTime(duration)}</span>
@@ -282,22 +310,22 @@ export function TimelineBar() {
               <button
                 onClick={() => setLoop(!loop)}
                 title={loop ? 'Repetição contínua ligada' : 'Repetição desligada'}
-                className={`p-2 rounded-xl border transition-colors ${
+                className={`p-1.5 rounded-lg border transition-colors ${
                   loop
                     ? 'bg-[#c6f432]/15 text-[#c6f432] border-[#c6f432]/40'
                     : 'text-gray-500 hover:text-gray-300 border-[#1f2a24]'
                 }`}
               >
-                <Repeat className="w-3.5 h-3.5" />
+                <Repeat className="w-3 h-3" />
               </button>
 
               {/* Seletor de Velocidade */}
-              <div className="flex items-center bg-[#161e19] p-0.5 rounded-xl border border-[#1f2a24] text-[11px] font-semibold">
+              <div className="flex items-center bg-[#161e19] p-0.5 rounded-lg border border-[#1f2a24] text-[10px] font-semibold">
                 {[0.5, 1, 2].map((s) => (
                   <button
                     key={s}
                     onClick={() => setSpeed(s)}
-                    className={`px-2 py-1 rounded-lg transition-colors ${
+                    className={`px-1.5 py-0.5 rounded transition-colors ${
                       speed === s
                         ? 'bg-[#c6f432] text-[#0b0f0d] font-bold'
                         : 'text-gray-400 hover:text-white'
@@ -310,23 +338,23 @@ export function TimelineBar() {
             </div>
 
             {/* Lado Direito: Ações da Sequência + Botão ZERAR PONTOS */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {/* Menu de Circuitos Prontos */}
               <div className="relative">
                 <button
                   onClick={() => setShowPresetsMenu((v) => !v)}
                   title="Aplicar circuito pronto a este jogador com 1 clique"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1a231e] hover:bg-[#233028] text-amber-300 border border-amber-500/30 transition-all shadow-sm"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold bg-[#1a231e] hover:bg-[#233028] text-amber-300 border border-amber-500/30 transition-all shadow-sm"
                 >
-                  <Zap className="w-3.5 h-3.5 fill-current" />
-                  <span>Circuitos Prontos</span>
-                  <ChevronDown className="w-3 h-3" />
+                  <Zap className="w-3 h-3 fill-current" />
+                  <span>Circuitos</span>
+                  <ChevronDown className="w-2.5 h-2.5" />
                 </button>
 
                 {showPresetsMenu && (
-                  <div className="absolute right-0 bottom-full mb-2 w-64 bg-[#121815] border border-[#233028] rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1">
-                    <div className="px-2 py-1 text-[11px] font-bold text-gray-400 border-b border-[#1f2a24] mb-1">
-                      Aplicar circuito em {selectedObject?.type === 'player' ? selectedObject.name : 'atleta'}:
+                  <div className="absolute right-0 bottom-full mb-2 w-60 bg-[#121815] border border-[#233028] rounded-2xl shadow-2xl p-2 z-50 flex flex-col gap-1">
+                    <div className="px-2 py-1 text-[10px] font-bold text-gray-400 border-b border-[#1f2a24] mb-0.5">
+                      Aplicar em {selectedObject?.type === 'player' ? selectedObject.name : 'atleta'}:
                     </div>
                     {CIRCUIT_PRESETS.map((p) => (
                       <button
@@ -340,7 +368,7 @@ export function TimelineBar() {
                             handleApplyPreset(p, target)
                           }
                         }}
-                        className="text-left p-2 rounded-xl hover:bg-[#1a231e] text-white hover:text-[#c6f432] transition-colors flex flex-col"
+                        className="text-left p-1.5 rounded-xl hover:bg-[#1a231e] text-white hover:text-[#c6f432] transition-colors flex flex-col"
                       >
                         <span className="font-bold text-xs">{p.name}</span>
                         <span className="text-[10px] text-gray-400 leading-tight">{p.description}</span>
@@ -365,10 +393,10 @@ export function TimelineBar() {
                   }
                 }}
                 title="Clique na quadra de areia para montar o trajeto passo a passo e escolher os fundamentos"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-[#c6f432] text-[#0b0f0d] hover:bg-[#b0de26] transition-all shadow-md animate-pulse hover:animate-none"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-black bg-[#c6f432] text-[#0b0f0d] hover:bg-[#b0de26] transition-all shadow-md animate-pulse hover:animate-none"
               >
-                <Footprints className="w-4 h-4 stroke-[2.5]" />
-                <span>Gravar Trajeto na Areia</span>
+                <Footprints className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Gravar Trajeto</span>
               </button>
 
               {/* Botão + Novo Passo (+2s) */}
@@ -376,9 +404,9 @@ export function TimelineBar() {
                 <button
                   onClick={() => handleAddNextStep()}
                   title="Avança 2 segundos e cria o próximo passo da corrida na areia"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[#1a231e] hover:bg-[#233028] text-white border border-[#233028] transition-all"
+                  className="flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-bold bg-[#1a231e] hover:bg-[#233028] text-white border border-[#233028] transition-all"
                 >
-                  <Plus className="w-3.5 h-3.5 stroke-[3] text-[#c6f432]" />
+                  <Plus className="w-3 h-3 stroke-[3] text-[#c6f432]" />
                   <span>+ Passo</span>
                 </button>
               )}
@@ -387,39 +415,39 @@ export function TimelineBar() {
               <button
                 onClick={handleClearKeyframes}
                 title="Apagar pontos do trajeto e recomeçar do zero"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-500/15 hover:bg-red-500/25 text-red-400 hover:text-red-300 border border-red-500/30 transition-all shadow-sm"
+                className="flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-bold bg-red-500/15 hover:bg-red-500/25 text-red-400 hover:text-red-300 border border-red-500/30 transition-all shadow-sm"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>{selectedObject ? 'Zerar Pontos' : 'Zerar Tudo'}</span>
+                <Trash2 className="w-3 h-3" />
+                <span>{selectedObject ? 'Zerar' : 'Zerar Tudo'}</span>
               </button>
 
               {/* Duração total */}
-              <div className="flex items-center gap-1 pl-2 border-l border-[#1f2a24]">
-                <span className="text-[10px] text-gray-500">Duração:</span>
+              <div className="flex items-center gap-1 pl-1.5 border-l border-[#1f2a24]">
+                <span className="text-[9px] text-gray-500">Dur:</span>
                 <input
                   type="number"
                   min="2"
                   max="60"
                   value={duration}
                   onChange={(e) => handleDurationChange(parseInt(e.target.value) || 8)}
-                  className="w-12 px-1.5 py-1 bg-[#161e19] border border-[#233028] rounded-lg text-xs text-center text-white font-mono focus:outline-none"
+                  className="w-10 px-1 py-0.5 bg-[#161e19] border border-[#233028] rounded text-[11px] text-center text-white font-mono focus:outline-none"
                 />
-                <span className="text-[10px] text-gray-500">s</span>
+                <span className="text-[9px] text-gray-500">s</span>
               </div>
             </div>
           </div>
 
-          {/* Atalhos Rápidos de Fundamentos Esportivos para o jogador selecionado */}
-          {selectedObject && (
+          {/* Atalhos Rápidos de Fundamentos Esportivos para o jogador selecionado (oculto no modo compacto) */}
+          {!compactMode && selectedObject && (
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#1f2a24]/60">
-              <div className="flex items-center gap-1 text-[11px] text-gray-400 font-semibold">
-                <span>Fundamento neste passo:</span>
+              <div className="flex items-center gap-1 text-[10px] text-gray-400 font-semibold shrink-0">
+                <span>Fundamento:</span>
               </div>
 
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
                 <button
                   onClick={() => handleRecordKeyframe('')}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all border ${
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-all border ${
                     !currentKeyframe?.action
                       ? 'bg-[#1a231e] text-white border-[#c6f432]/40'
                       : 'bg-[#121815] text-gray-400 border-[#1f2a24] hover:text-white'
@@ -433,7 +461,7 @@ export function TimelineBar() {
                     <button
                       key={a.id}
                       onClick={() => handleRecordKeyframe(a.badge)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all border whitespace-nowrap ${
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-all border whitespace-nowrap ${
                         active
                           ? 'bg-[#c6f432] text-[#0b0f0d] border-[#c6f432] font-bold shadow-sm'
                           : 'bg-[#161e19] text-gray-300 border-[#233028] hover:border-[#c6f432]/40 hover:text-white'
@@ -447,10 +475,10 @@ export function TimelineBar() {
             </div>
           )}
 
-          {/* Sequência Passo a Passo do Aluno Selecionado */}
-          {selectedObject && objectKeyframes.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 border-t border-[#1f2a24]/40 scrollbar-none">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider pr-1 whitespace-nowrap">
+          {/* Sequência Passo a Passo do Aluno Selecionado (oculto no modo compacto) */}
+          {!compactMode && selectedObject && objectKeyframes.length > 0 && (
+            <div className="flex items-center gap-1 overflow-x-auto py-0.5 border-t border-[#1f2a24]/40 scrollbar-none">
+              <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider pr-1 whitespace-nowrap shrink-0">
                 Passos ({objectKeyframes.length}):
               </span>
               {objectKeyframes.map((k, idx) => {
@@ -459,13 +487,13 @@ export function TimelineBar() {
                   <div
                     key={k.id}
                     onClick={() => seek(k.time)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold border cursor-pointer transition-all whitespace-nowrap ${
+                    className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border cursor-pointer transition-all whitespace-nowrap ${
                       isCurrent
-                        ? 'bg-[#c6f432] text-[#0b0f0d] border-[#c6f432] shadow-md scale-105'
+                        ? 'bg-[#c6f432] text-[#0b0f0d] border-[#c6f432] shadow-sm scale-105'
                         : 'bg-[#161e19] text-gray-300 border-[#233028] hover:border-[#c6f432]/50 hover:text-white'
                     }`}
                   >
-                    <span className="font-mono text-[10px] opacity-75">{k.time}s</span>
+                    <span className="font-mono text-[9px] opacity-75">{k.time}s</span>
                     <span>{k.action || `Passo ${idx + 1}`}</span>
                     <button
                       onClick={(e) => {
@@ -475,7 +503,7 @@ export function TimelineBar() {
                       title="Excluir este passo"
                       className="hover:text-red-400 p-0.5 ml-0.5 rounded"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 )
@@ -483,20 +511,20 @@ export function TimelineBar() {
             </div>
           )}
 
-          {/* Trilho da Timeline com Scrubber */}
+          {/* Trilho da Timeline com Scrubber (h-6 mais elegante e compacto) */}
           <div
             ref={trackRef}
             onClick={handleTrackClick}
-            className="w-full h-8 bg-[#0e1411] hover:bg-[#111915] border border-[#1f2a24] rounded-xl relative cursor-pointer select-none overflow-hidden transition-colors"
+            className="w-full h-6 bg-[#0e1411] hover:bg-[#111915] border border-[#1f2a24] rounded-xl relative cursor-pointer select-none overflow-hidden transition-colors"
           >
             {/* Linhas de divisão de segundos */}
             <div className="absolute inset-0 flex justify-between pointer-events-none px-2">
               {Array.from({ length: Math.min(25, duration + 1) }).map((_, i) => {
                 const s = Math.round((i / Math.min(24, duration)) * duration)
                 return (
-                  <div key={i} className="flex flex-col items-center justify-between h-full py-1">
-                    <div className="w-px h-1.5 bg-[#233028]" />
-                    <span className="text-[9px] font-mono text-gray-600">{s}s</span>
+                  <div key={i} className="flex flex-col items-center justify-between h-full py-0.5">
+                    <div className="w-px h-1 bg-[#233028]" />
+                    <span className="text-[8px] font-mono text-gray-600 leading-none">{s}s</span>
                   </div>
                 )
               })}
@@ -521,7 +549,7 @@ export function TimelineBar() {
                     seek(k.time)
                   }}
                   title={`${k.name}: ponto aos ${k.time}s${k.action ? ` (${k.action})` : ''}`}
-                  className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 rotate-45 rounded-sm transition-transform cursor-pointer shadow-md ${
+                  className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45 rounded-sm transition-transform cursor-pointer shadow-md ${
                     isCurrent
                       ? 'bg-[#ff8a3d] border-2 border-white scale-125 z-20'
                       : k.isCurrentObject
@@ -541,7 +569,7 @@ export function TimelineBar() {
               className="absolute top-0 bottom-0 w-0.5 bg-[#c6f432] shadow-lg pointer-events-none z-30 flex flex-col items-center"
               style={{ left: `${progressPercent}%` }}
             >
-              <div className="w-3 h-3 bg-[#c6f432] rotate-45 -mt-1 shadow-md border border-[#0b0f0d]" />
+              <div className="w-2.5 h-2.5 bg-[#c6f432] rotate-45 -mt-0.5 shadow-md border border-[#0b0f0d]" />
             </div>
           </div>
         </div>

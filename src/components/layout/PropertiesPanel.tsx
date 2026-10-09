@@ -36,15 +36,24 @@ export function PropertiesPanel() {
   const updateObjects = useDocumentStore((s) => s.updateObjects)
 
   const selectedIds = useUiStore((s) => s.selectedIds)
+  const recordingPlayerId = useUiStore((s) => s.recordingPlayerId)
   const [activeTab, setActiveTab] = useState<'exercise' | 'court'>('exercise')
   const [collapsed, setCollapsed] = useState(false)
 
-  // Abre automaticamente quando o professor seleciona um atleta ou objeto na quadra
+  // Abre automaticamente quando o professor seleciona um atleta ou objeto na quadra,
+  // exceto se estiver no modo de gravação de trajeto na areia (para não cobrir a quadra)
   useEffect(() => {
-    if (selectedIds.length > 0) {
+    if (selectedIds.length > 0 && !recordingPlayerId) {
       setCollapsed(false)
     }
-  }, [selectedIds.length])
+  }, [selectedIds.length, recordingPlayerId])
+
+  // Recolhe automaticamente ao entrar no modo de gravar trajeto na areia para deixar a quadra 100% visível
+  useEffect(() => {
+    if (recordingPlayerId) {
+      setCollapsed(true)
+    }
+  }, [recordingPlayerId])
 
   const selectedObjects = exercise.objects.filter((o) => selectedIds.includes(o.id))
   const single = selectedObjects.length === 1 ? selectedObjects[0] : null
@@ -54,7 +63,7 @@ export function PropertiesPanel() {
 
   return (
     <aside
-      className={`absolute right-4 top-20 bottom-6 z-30 flex transition-all duration-300 ${
+      className={`absolute right-3 sm:right-4 top-16 md:top-18 bottom-auto max-h-[calc(100vh-5.5rem)] z-30 flex transition-all duration-300 ${
         collapsed ? 'translate-x-[calc(100%+16px)]' : 'translate-x-0'
       }`}
     >
@@ -62,23 +71,23 @@ export function PropertiesPanel() {
       <button
         onClick={() => setCollapsed((v) => !v)}
         title={collapsed ? 'Abrir Ficha Técnica do Treino' : 'Recolher Ficha'}
-        className={`absolute -left-32 top-3 px-3 py-1.5 rounded-l-xl bg-[#121815]/95 backdrop-blur-md border-y border-l border-[#1f2a24] flex items-center gap-1.5 text-xs font-bold transition-all shadow-xl select-none ${
+        className={`absolute -left-28 top-2 px-2.5 py-1.5 rounded-l-xl bg-[#121815]/95 backdrop-blur-md border-y border-l border-[#1f2a24] flex items-center gap-1.5 text-xs font-bold transition-all shadow-xl select-none ${
           collapsed
             ? 'text-gray-200 hover:text-[#c6f432] bg-[#161e19] border-[#2b3a31]'
             : 'text-gray-400 hover:text-white'
         }`}
       >
         <FileText className="w-3.5 h-3.5 text-[#c6f432]" />
-        <span>{collapsed ? 'Ficha Treino' : 'Recolher'}</span>
+        <span>{collapsed ? 'Ficha' : 'Recolher'}</span>
         {collapsed ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
       </button>
 
-      <div className="w-80 md:w-96 bg-[#121815]/95 backdrop-blur-md border border-[#1f2a24] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="w-72 sm:w-80 max-w-[85vw] bg-[#121815]/95 backdrop-blur-md border border-[#1f2a24] rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[calc(100vh-5.5rem)]">
         {/* CASO 1: Único objeto selecionado */}
         {single && (
           <div className="flex-1 flex flex-col min-h-0">
             {/* Header do objeto */}
-            <div className="p-4 border-b border-[#1f2a24] flex items-center justify-between bg-[#0e1411]">
+            <div className="p-3 px-3.5 border-b border-[#1f2a24] flex items-center justify-between bg-[#0e1411]">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: single.color }} />
                 <h3 className="font-bold text-sm text-white">{OBJECT_LABELS[single.type]}</h3>
@@ -114,7 +123,7 @@ export function PropertiesPanel() {
             </div>
 
             {/* Conteúdo scrollável de propriedades */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
               {/* Propriedades específicas de Jogador */}
               {single.type === 'player' && (
                 (() => {
@@ -363,23 +372,23 @@ export function PropertiesPanel() {
 
         {/* CASO 2: Múltiplos objetos selecionados */}
         {isMulti && (
-          <div className="flex-1 flex flex-col p-4 space-y-4 text-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1f2a24]">
-              <span className="font-bold text-white text-sm">
+          <div className="flex-1 flex flex-col p-3 space-y-3 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[#1f2a24]">
+              <span className="font-bold text-white text-xs">
                 {selectedObjects.length} objetos selecionados
               </span>
               <button
                 onClick={deleteSelected}
-                className="p-1.5 rounded-lg border border-[#2b3a31] text-gray-400 hover:text-red-400 hover:bg-[#231518] transition-colors"
+                className="p-1 rounded-lg border border-[#2b3a31] text-gray-400 hover:text-red-400 hover:bg-[#231518] transition-colors"
                 title="Excluir todos"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-gray-400 block font-medium">Alterar cor em lote</label>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-1.5">
+              <label className="text-[11px] text-gray-400 block font-medium">Alterar cor em lote</label>
+              <div className="flex flex-wrap gap-1.5">
                 {COLOR_PALETTE.map((c) => (
                   <button
                     key={c}
@@ -387,23 +396,23 @@ export function PropertiesPanel() {
                       const patches = Object.fromEntries(selectedObjects.map((o) => [o.id, { color: c }]))
                       updateObjects(patches)
                     }}
-                    className="w-6 h-6 rounded-full border-2 border-transparent hover:border-white transition-transform hover:scale-110"
+                    className="w-5 h-5 rounded-full border-2 border-transparent hover:border-white transition-transform hover:scale-110"
                     style={{ backgroundColor: c }}
                   />
                 ))}
               </div>
             </div>
 
-            <div className="space-y-2 pt-2 border-t border-[#1f2a24]">
+            <div className="space-y-1.5 pt-2 border-t border-[#1f2a24]">
               <button
                 onClick={() => {
                   const lock = !selectedObjects.every((o) => o.locked)
                   const patches = Object.fromEntries(selectedObjects.map((o) => [o.id, { locked: lock }]))
                   updateObjects(patches)
                 }}
-                className="w-full py-2 bg-[#161e19] hover:bg-[#1f2a24] border border-[#233028] rounded-xl text-gray-200 font-semibold transition-colors flex items-center justify-center gap-2"
+                className="w-full py-1.5 bg-[#161e19] hover:bg-[#1f2a24] border border-[#233028] rounded-xl text-gray-200 text-xs font-semibold transition-colors flex items-center justify-center gap-2"
               >
-                <Lock className="w-4 h-4" />
+                <Lock className="w-3.5 h-3.5" />
                 Bloquear / Desbloquear seleção
               </button>
             </div>
@@ -417,31 +426,31 @@ export function PropertiesPanel() {
             <div className="grid grid-cols-2 border-b border-[#1f2a24] bg-[#0e1411]">
               <button
                 onClick={() => setActiveTab('exercise')}
-                className={`py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border-b-2 ${
+                className={`py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border-b-2 ${
                   activeTab === 'exercise'
                     ? 'border-[#c6f432] text-[#c6f432]'
                     : 'border-transparent text-gray-400 hover:text-white'
                 }`}
               >
-                <Sliders className="w-4 h-4" />
+                <Sliders className="w-3.5 h-3.5" />
                 Exercício
               </button>
               <button
                 onClick={() => setActiveTab('court')}
-                className={`py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border-b-2 ${
+                className={`py-2 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border-b-2 ${
                   activeTab === 'court'
                     ? 'border-[#c6f432] text-[#c6f432]'
                     : 'border-transparent text-gray-400 hover:text-white'
                 }`}
               >
-                <Grid className="w-4 h-4" />
+                <Grid className="w-3.5 h-3.5" />
                 Quadra
               </button>
             </div>
 
             {/* Aba do Exercício */}
             {activeTab === 'exercise' && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
                 {/* Objetivo */}
                 <div>
                   <label className="text-gray-400 block mb-1 font-medium">Objetivo do exercício</label>
@@ -582,7 +591,7 @@ export function PropertiesPanel() {
 
             {/* Aba da Quadra */}
             {activeTab === 'court' && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
                 {/* Altura da rede */}
                 <div className="space-y-2 bg-[#161e19] p-3 rounded-xl border border-[#1f2a24]">
                   <div className="flex justify-between items-center">

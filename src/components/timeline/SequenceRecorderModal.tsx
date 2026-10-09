@@ -135,14 +135,14 @@ export function SequenceRecorderModal() {
   return (
     <>
       {/* 1. Banner Superior Fixo: Modo Gravação de Trajeto */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-[#121815]/95 backdrop-blur-md border-2 border-[#c6f432] p-3 px-5 rounded-2xl shadow-2xl flex items-center gap-4 select-none animate-in fade-in slide-in-from-top-4 duration-200 max-w-[95vw] overflow-x-auto">
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#c6f432] animate-ping" />
-          <Footprints className="w-5 h-5 text-[#c6f432]" />
+      <div className="absolute top-16 md:top-18 left-1/2 -translate-x-1/2 z-40 bg-[#121815]/95 backdrop-blur-md border border-[#c6f432]/60 p-2 sm:p-2.5 px-3 sm:px-4 rounded-2xl shadow-2xl flex items-center gap-2.5 sm:gap-3.5 select-none animate-in fade-in slide-in-from-top-3 duration-200 max-w-[95vw] overflow-x-auto">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#c6f432] animate-ping" />
+          <Footprints className="w-4 h-4 text-[#c6f432]" />
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-black text-white uppercase tracking-wider">
-                Gravando Atleta:
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-black text-white uppercase tracking-wider">
+                Gravando:
               </span>
               <div className="flex items-center gap-1">
                 {allPlayers.map((p) => (
@@ -153,7 +153,7 @@ export function SequenceRecorderModal() {
                       setRecordingPlayerId(p.id)
                       select([p.id])
                     }}
-                    className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
                       p.id === player.id
                         ? 'bg-[#c6f432] text-[#0b0f0d] shadow-sm ring-1 ring-[#c6f432]'
                         : 'bg-[#1a231e] text-gray-300 hover:text-white border border-[#233028]'
@@ -164,60 +164,60 @@ export function SequenceRecorderModal() {
                 ))}
               </div>
             </div>
-            <p className="text-[11px] text-gray-300 font-medium mt-0.5">
-              👉 <strong className="text-white">Clique na areia</strong> ou use os atalhos ao lado para marcar o próximo passo.
+            <p className="text-[10px] text-gray-300 font-medium">
+              👉 <strong className="text-white">Clique na areia</strong> para marcar o próximo passo.
             </p>
           </div>
         </div>
 
         {/* Passos Rápidos Pré-definidos */}
-        <div className="flex items-center gap-1 px-2.5 py-1 bg-[#161e19] border border-[#233028] rounded-xl shrink-0">
-          <span className="text-[10px] text-gray-400 font-bold uppercase mr-1 hidden sm:inline">Passo Rápido:</span>
+        <div className="flex items-center gap-1 px-2 py-0.5 bg-[#161e19] border border-[#233028] rounded-xl shrink-0">
+          <span className="text-[9px] text-gray-400 font-bold uppercase mr-0.5 hidden sm:inline">Atalhos:</span>
           <button
             onClick={() => handleQuickAddStep('rede')}
             title="Adicionar próximo passo na rede"
-            className="px-2.5 py-1 bg-[#1a231e] hover:bg-[#202e24] text-xs font-bold text-gray-200 hover:text-[#c6f432] rounded-lg transition-colors border border-[#233028]"
+            className="px-2 py-0.5 bg-[#1a231e] hover:bg-[#202e24] text-[11px] font-bold text-gray-200 hover:text-[#c6f432] rounded-lg transition-colors border border-[#233028]"
           >
-            🏐 Na Rede
+            🏐 Rede
           </button>
           <button
             onClick={() => handleQuickAddStep('fundo')}
             title="Adicionar próximo passo no fundo"
-            className="px-2.5 py-1 bg-[#1a231e] hover:bg-[#202e24] text-xs font-bold text-gray-200 hover:text-[#c6f432] rounded-lg transition-colors border border-[#233028]"
+            className="px-2 py-0.5 bg-[#1a231e] hover:bg-[#202e24] text-[11px] font-bold text-gray-200 hover:text-[#c6f432] rounded-lg transition-colors border border-[#233028]"
           >
-            👟 No Fundo
+            👟 Fundo
           </button>
           <button
             onClick={() => handleQuickAddStep('meio')}
             title="Adicionar próximo passo no meio da quadra"
-            className="px-2.5 py-1 bg-[#1a231e] hover:bg-[#202e24] text-xs font-bold text-gray-200 hover:text-[#c6f432] rounded-lg transition-colors border border-[#233028]"
+            className="px-2 py-0.5 bg-[#1a231e] hover:bg-[#202e24] text-[11px] font-bold text-gray-200 hover:text-[#c6f432] rounded-lg transition-colors border border-[#233028]"
           >
-            📍 No Meio
+            📍 Meio
           </button>
         </div>
 
         {/* Contador de passos */}
-        <div className="px-3 py-1 bg-[#1a231e] border border-[#233028] rounded-xl text-center shrink-0">
-          <span className="text-[10px] text-gray-400 block font-semibold">Passos</span>
-          <span className="text-sm font-black text-[#c6f432] font-mono">{keyframes.length}</span>
+        <div className="px-2.5 py-0.5 bg-[#1a231e] border border-[#233028] rounded-xl text-center shrink-0">
+          <span className="text-[9px] text-gray-400 block font-semibold leading-none">Passos</span>
+          <span className="text-xs font-black text-[#c6f432] font-mono leading-tight">{keyframes.length}</span>
         </div>
 
         {/* Botões de Ação */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={handleFinish}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#c6f432] hover:bg-[#b0de26] text-[#0b0f0d] font-bold text-xs rounded-xl transition-all shadow-md"
+            className="flex items-center gap-1 px-2.5 py-1 bg-[#c6f432] hover:bg-[#b0de26] text-[#0b0f0d] font-bold text-xs rounded-xl transition-all shadow-md"
           >
-            <Check className="w-4 h-4 stroke-[3]" />
+            <Check className="w-3.5 h-3.5 stroke-[3]" />
             <span>Concluir</span>
           </button>
 
           <button
             onClick={handleClear}
             title="Apagar todos os passos e recomeçar"
-            className="p-1.5 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl transition-colors"
+            className="p-1 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-xl transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
 
           <button
@@ -226,39 +226,39 @@ export function SequenceRecorderModal() {
               setRecordingPlayerId(null)
             }}
             title="Sair do modo gravação"
-            className="p-1.5 bg-[#1a231e] hover:bg-[#233028] text-gray-400 hover:text-white rounded-xl transition-colors"
+            className="p-1 bg-[#1a231e] hover:bg-[#233028] text-gray-400 hover:text-white rounded-xl transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* 2. Modal Flutuante Central: Pergunta qual o fundamento ao clicar na areia */}
       {pendingStepPoint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 select-none animate-in fade-in duration-150">
-          <div className="bg-[#121815] border-2 border-[#c6f432] rounded-3xl p-6 shadow-2xl max-w-md w-full flex flex-col gap-4 text-center">
-            <div className="space-y-1">
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#c6f432]/15 text-[#c6f432] border border-[#c6f432]/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 select-none animate-in fade-in duration-150">
+          <div className="bg-[#121815] border-2 border-[#c6f432] rounded-3xl p-5 shadow-2xl max-w-sm w-full flex flex-col gap-3 text-center">
+            <div className="space-y-0.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[#c6f432]/15 text-[#c6f432] border border-[#c6f432]/30">
                 Passo {keyframes.length + 1}
               </span>
-              <h3 className="text-lg font-black text-white mt-1">
-                Qual fundamento ele vai fazer neste ponto?
+              <h3 className="text-base font-black text-white mt-1">
+                Qual fundamento neste ponto?
               </h3>
-              <p className="text-xs text-gray-400">
-                Escolha o movimento que o atleta executará ao chegar aqui na areia:
+              <p className="text-[11px] text-gray-400">
+                Escolha o movimento que o atleta executará na areia:
               </p>
             </div>
 
-            {/* Grid com os botões grandes de fundamentos */}
-            <div className="grid grid-cols-2 gap-2 text-left">
+            {/* Grid com os botões de fundamentos */}
+            <div className="grid grid-cols-2 gap-1.5 text-left">
               <button
                 onClick={() => handleSelectAction('')}
-                className="p-3 rounded-2xl bg-[#161e19] hover:bg-[#202b24] border border-[#233028] hover:border-[#c6f432]/50 text-white font-bold text-xs flex items-center gap-2.5 transition-all group"
+                className="p-2.5 rounded-xl bg-[#161e19] hover:bg-[#202b24] border border-[#233028] hover:border-[#c6f432]/50 text-white font-bold text-xs flex items-center gap-2 transition-all group"
               >
-                <span className="text-xl">🏃</span>
+                <span className="text-lg">🏃</span>
                 <div className="flex flex-col">
-                  <span>Só Deslocamento</span>
-                  <span className="text-[10px] text-gray-400 font-normal">Corrida / Base</span>
+                  <span>Deslocamento</span>
+                  <span className="text-[9px] text-gray-400 font-normal">Corrida / Base</span>
                 </div>
               </button>
 
@@ -266,12 +266,12 @@ export function SequenceRecorderModal() {
                 <button
                   key={a.id}
                   onClick={() => handleSelectAction(a.badge)}
-                  className="p-3 rounded-2xl bg-[#161e19] hover:bg-[#202b24] border border-[#233028] hover:border-[#c6f432]/50 text-white font-bold text-xs flex items-center gap-2.5 transition-all group"
+                  className="p-2.5 rounded-xl bg-[#161e19] hover:bg-[#202b24] border border-[#233028] hover:border-[#c6f432]/50 text-white font-bold text-xs flex items-center gap-2 transition-all group"
                 >
-                  <span className="text-xl">{a.label.split(' ')[0]}</span>
+                  <span className="text-lg">{a.label.split(' ')[0]}</span>
                   <div className="flex flex-col">
-                    <span>{a.label.split(' ').slice(1).join(' ')}</span>
-                    <span className="text-[10px] text-gray-400 font-normal">Executa {a.badge}</span>
+                    <span className="truncate">{a.label.split(' ').slice(1).join(' ')}</span>
+                    <span className="text-[9px] text-gray-400 font-normal truncate">Executa {a.badge}</span>
                   </div>
                 </button>
               ))}
@@ -280,7 +280,7 @@ export function SequenceRecorderModal() {
             {/* Cancelar ponto */}
             <button
               onClick={() => setPendingStepPoint(null)}
-              className="text-xs text-gray-400 hover:text-white underline py-1"
+              className="text-[11px] text-gray-400 hover:text-white underline py-0.5"
             >
               Cancelar este ponto
             </button>
