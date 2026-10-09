@@ -276,18 +276,6 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       leftForearmRef.current.rotation.z = THREE.MathUtils.lerp(leftForearmRef.current.rotation.z, targetLeftElbowZ, 0.26)
       rightForearmRef.current.rotation.z = THREE.MathUtils.lerp(rightForearmRef.current.rotation.z, targetRightElbowZ, 0.26)
     }
-
-    // 5. CABEÇA
-    let targetHeadZ = 0
-    if (isCabeca) {
-      targetHeadZ = 0.45
-    } else if (isPeito) {
-      targetHeadZ = -0.32
-    }
-
-    if (headRef.current) {
-      headRef.current.rotation.z = THREE.MathUtils.lerp(headRef.current.rotation.z, targetHeadZ, 0.3)
-    }
   })
 
   const shirtColor = obj.role === 'coach' ? '#111827' : obj.color
