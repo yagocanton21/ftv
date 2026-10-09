@@ -19,6 +19,7 @@ const noRaycast = () => null
 
 export function PlayerModel({ obj }: { obj: PlayerObject }) {
   const rootGroupRef = useRef<THREE.Group>(null)
+  const shadowMeshRef = useRef<THREE.Mesh>(null)
 
   // Membros inferiores articulados (quadril -> joelho -> pé)
   const leftLegRef = useRef<THREE.Group>(null)
@@ -50,12 +51,10 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
     const currTime = useSimulationStore.getState().currentTime
 
     let isMoving = false
-    let currentAction = ''
     let speed = 0
 
     if (keyframes && keyframes.length > 0) {
       const interpolated = getInterpolatedState(obj, currTime, keyframes)
-      currentAction = (interpolated.action ?? '').toLowerCase()
 
       const dx = interpolated.position.x - prevPosRef.current.x
       const dz = interpolated.position.z - prevPosRef.current.z
@@ -72,31 +71,70 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
     }
 
     const t = walkPhaseRef.current
-
-    const isChapa = currentAction.includes('chapa')
-    const isPeito = currentAction.includes('peito')
-    const isCabeca = currentAction.includes('cabeça') || currentAction.includes('cabeca')
-    const isAtaque = currentAction.includes('ataque')
     const isCoach = obj.role === 'coach'
 
-    // 1. ELEVAÇÃO VERTICAL E BALANÇO PÉLVICO (PELVIC SWAY)
-    let targetElev = 0
-    if (isAtaque) {
-      // Salto potente de ataque na rede com impulsão e testada para baixo
-      targetElev = 0.76
-    } else if (isCabeca) {
-      // Salto/impulsão para cabeceio clássico de futevôlei
-      targetElev = 0.52
-    } else if (isMoving) {
-      // Deslocamento dinâmico na areia fofa com centro de gravidade ágil
+    // 1. ELEVAÇÃO VERTICAL E DETECÇÃO DE AÇÕES DA SIMULAÇÃO
+    let jumpElev = 0
+    let isAtaque = false
+    let isCabeca = false
+    let isChapa = false
+    let isPeito = false
+
+    if (keyframes && keyframes.length > 0) {
+      for (const kf of keyframes) {
+        if (!kf.action) continue
+        const act = kf.action.toLowerCase()
+        const dt = currTime - kf.time
+        const absDt = Math.abs(dt)
+
+        if (act.includes('ataque')) {
+          // Janela de salto de ataque na rede: 1.0s de impulsão e aterrissagem
+          if (absDt < 0.52) {
+            isAtaque = true
+            const norm = absDt / 0.52
+            // Parábola de física de salto: no pico (dt = 0) atinge 0.98m!
+            // Com 1.75m de altura base, o topo da cabeça alcança 2.73m (bem acima da rede de 2.20m!)
+            const curve = Math.max(0, 1 - norm * norm)
+            jumpElev = Math.max(jumpElev, 0.98 * curve)
+          }
+        } else if (act.includes('cabeça') || act.includes('cabeca')) {
+          if (absDt < 0.44) {
+            isCabeca = true
+            const norm = absDt / 0.44
+            const curve = Math.max(0, 1 - norm * norm)
+            jumpElev = Math.max(jumpElev, 0.62 * curve)
+          }
+        } else if (act.includes('chapa') && absDt < 0.50) {
+          isChapa = true
+        } else if (act.includes('peito') && absDt < 0.50) {
+          isPeito = true
+        }
+      }
+    }
+
+    // Se estiver se deslocando e não estiver saltando, adiciona a oscilação natural da corrida
+    let targetElev = jumpElev
+    if (jumpElev === 0 && isMoving) {
       targetElev = Math.abs(Math.sin(t * 2)) * 0.052
     }
 
+    // O salto segue a curva física com lerp ágil para resposta instantânea
     rootGroupRef.current.position.y = THREE.MathUtils.lerp(
       rootGroupRef.current.position.y,
       targetElev,
-      0.22
+      0.35
     )
+
+    // Atualiza a sombra no solo: fica fixa na areia e diminui proporcionalmente à altura do salto
+    if (shadowMeshRef.current) {
+      const currentY = rootGroupRef.current.position.y
+      const shadowScale = Math.max(0.4, 1 - currentY * 0.45)
+      shadowMeshRef.current.scale.set(shadowScale, shadowScale, 1)
+      const mat = shadowMeshRef.current.material as THREE.MeshBasicMaterial
+      if (mat) {
+        mat.opacity = Math.max(0.12, 0.38 - currentY * 0.25)
+      }
+    }
 
     // Balanço lateral orgânico de quadril (transferência de peso entre passadas na areia)
     const targetPelvisRoll = isChapa ? -0.06 : isMoving ? Math.sin(t) * 0.048 : Math.sin(currTime * 1.6) * 0.012
@@ -281,14 +319,25 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
   const shirtColor = obj.role === 'coach' ? '#111827' : obj.color
 
   return (
-    <group ref={rootGroupRef}>
-      {/* Sombra de contato suave na areia sob os pés */}
-      <mesh position-y={0.012} rotation-x={-Math.PI / 2} raycast={noRaycast}>
+    <group>
+      {/* Sombra de contato que permanece na areia mesmo no salto alto */}
+      <mesh ref={shadowMeshRef} position-y={0.012} rotation-x={-Math.PI / 2} raycast={noRaycast}>
         <circleGeometry args={[0.34, 24]} />
         <meshBasicMaterial color="#000" transparent opacity={0.35} depthWrite={false} />
       </mesh>
 
-      {/* 1. PERNA ESQUERDA ARTICULADA (Bermuda -> Coxa -> Joelho -> Canela -> Pé) */}
+      {/* Indicador de orientação no chão */}
+      <DirectionArrow color={obj.color} distance={0.55} />
+      {obj.role === 'coach' && (
+        <mesh position={[0, 0.012, 0]} rotation-x={-Math.PI / 2} raycast={noRaycast}>
+          <ringGeometry args={[0.34, 0.40, 6]} />
+          <meshBasicMaterial color={obj.color} transparent opacity={0.9} />
+        </mesh>
+      )}
+
+      {/* Corpo do atleta com elevação vertical e salto no ar */}
+      <group ref={rootGroupRef}>
+        {/* 1. PERNA ESQUERDA ARTICULADA (Bermuda -> Coxa -> Joelho -> Canela -> Pé) */}
       <group ref={leftLegRef} position={[0, 0.82, -0.13]}>
         {/* Perna da bermuda esportiva (acompanha o movimento da coxa) */}
         <mesh position={[0, -0.09, 0]} castShadow>
@@ -527,15 +576,6 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
           </group>
         </group>
       </group>
-
-      {/* Indicador de orientação no chão */}
-      <DirectionArrow color={obj.color} distance={0.55} />
-      {obj.role === 'coach' && (
-        <mesh position={[0, 0.012, 0]} rotation-x={-Math.PI / 2} raycast={noRaycast}>
-          <ringGeometry args={[0.34, 0.40, 6]} />
-          <meshBasicMaterial color={obj.color} transparent opacity={0.9} />
-        </mesh>
-      )}
     </group>
   )
 }
