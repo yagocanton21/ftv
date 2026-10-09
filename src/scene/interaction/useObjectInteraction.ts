@@ -10,8 +10,6 @@ import { useUiStore, type Preview } from '@/store/uiStore'
 const GROUND = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 const MIN_DRAG_METERS = 0.03
 
-type Captureable = { setPointerCapture(id: number): void; releasePointerCapture(id: number): void }
-
 /** Ponto de interseção do raio do ponteiro com o plano da areia (Y = 0). */
 export function groundPoint(e: ThreeEvent<PointerEvent>): Vec2 | null {
   const hit = e.ray.intersectPlane(GROUND, new THREE.Vector3())
