@@ -5,10 +5,10 @@ export const ACTION_PRESETS = [
   { id: 'saque', label: '🚀 Saque', badge: 'Saque' },
   { id: 'recepcao', label: '🏐 Recepção', badge: 'Recepção' },
   { id: 'levantamento', label: '🌟 Levantamento', badge: 'Levantamento' },
-  { id: 'ataque', label: '💥 Ataque (Shark)', badge: 'Ataque!' },
+  { id: 'ataque', label: '🎯 Ataque de Cabeça', badge: 'Ataque Cabeça' },
   { id: 'chapa', label: '👟 Chapa', badge: 'Chapa' },
   { id: 'peito', label: '🛡️ Peito', badge: 'Peito' },
-  { id: 'cabeca', label: '🎯 Cabeça', badge: 'Cabeça' },
+  { id: 'cabeca', label: '⚽ Cabeça', badge: 'Cabeça' },
   { id: 'defesa', label: '🧤 Defesa', badge: 'Defesa' },
 ] as const
 
@@ -23,8 +23,8 @@ export interface CircuitPreset {
 export const CIRCUIT_PRESETS: CircuitPreset[] = [
   {
     id: 'chapas-ataque',
-    name: '2 Chapas + Peito + Ataque',
-    description: 'Chapa esquerda no fundo, volta ao meio, chapa direita no fundo, amortece no peito e ataca.',
+    name: '2 Chapas + Peito + Ataque de Cabeça',
+    description: 'Chapa esquerda no fundo, volta ao meio, chapa direita no fundo, amortece no peito e finaliza de cabeça na rede.',
     duration: 13,
     getKeyframes: (base) => [
       { id: 'c1', time: 0, position: { ...base }, rotation: 0, action: 'Base Central' },
@@ -33,7 +33,7 @@ export const CIRCUIT_PRESETS: CircuitPreset[] = [
       { id: 'c4', time: 6.5, position: { x: -6.8, z: 2.5 }, rotation: 335, action: '👟 Chapa Direita' },
       { id: 'c5', time: 8.5, position: { ...base }, rotation: 0, action: 'Base Meio' },
       { id: 'c6', time: 10.2, position: { x: -2.5, z: base.z }, rotation: 0, action: '🏐 Peito' },
-      { id: 'c7', time: 11.5, position: { x: -1.3, z: base.z }, rotation: 0, action: '💥 Ataque!' },
+      { id: 'c7', time: 11.5, position: { x: -1.3, z: base.z }, rotation: 0, action: '🎯 Ataque Cabeça' },
       { id: 'c8', time: 13.0, position: { ...base }, rotation: 0, action: 'Base' },
     ],
   },

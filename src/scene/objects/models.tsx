@@ -76,16 +76,19 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
     const isChapa = currentAction.includes('chapa')
     const isPeito = currentAction.includes('peito')
     const isCabeca = currentAction.includes('cabeça') || currentAction.includes('cabeca')
-    const isAtaque = currentAction.includes('ataque') || currentAction.includes('shark')
+    const isAtaque = currentAction.includes('ataque')
     const isCoach = obj.role === 'coach'
 
     // 1. ELEVAÇÃO VERTICAL E BALANÇO PÉLVICO (PELVIC SWAY)
     let targetElev = 0
-    if (isCabeca) {
-      targetElev = 0.58
-    } else if (isAtaque) {
-      targetElev = 0.82
+    if (isAtaque) {
+      // Salto potente de ataque na rede com impulsão e testada para baixo
+      targetElev = 0.76
+    } else if (isCabeca) {
+      // Salto/impulsão para cabeceio clássico de futevôlei
+      targetElev = 0.52
     } else if (isMoving) {
+      // Deslocamento dinâmico na areia fofa com centro de gravidade ágil
       targetElev = Math.abs(Math.sin(t * 2)) * 0.052
     }
 
@@ -95,8 +98,8 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       0.22
     )
 
-    // Balanço lateral orgânico de quadril (transferência de peso entre pernas)
-    const targetPelvisRoll = isMoving ? Math.sin(t) * 0.048 : Math.sin(currTime * 1.6) * 0.012
+    // Balanço lateral orgânico de quadril (transferência de peso entre passadas na areia)
+    const targetPelvisRoll = isChapa ? -0.06 : isMoving ? Math.sin(t) * 0.048 : Math.sin(currTime * 1.6) * 0.012
     rootGroupRef.current.rotation.x = THREE.MathUtils.lerp(
       rootGroupRef.current.rotation.x,
       targetPelvisRoll,
@@ -112,27 +115,32 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
     let targetRightKneeZ = 0
 
     if (isAtaque) {
-      targetRightHipZ = 1.45
-      targetRightHipX = 0.35
-      targetRightKneeZ = 0.15
-      targetLeftHipZ = -0.65
-      targetLeftKneeZ = 1.05
-    } else if (isChapa) {
-      targetRightHipZ = 0.92
-      targetRightHipX = 0.72
-      targetRightKneeZ = 0.82
-      targetLeftHipZ = -0.25
-      targetLeftKneeZ = 0.35
+      // ATAQUE DE CABEÇA: pernas fletidas para trás no ar criando o arco de força para a testada
+      targetLeftHipZ = -0.42
+      targetRightHipZ = -0.42
+      targetLeftHipX = -0.12
+      targetRightHipX = 0.12
+      targetLeftKneeZ = 1.35
+      targetRightKneeZ = 1.35
     } else if (isCabeca) {
-      targetLeftHipZ = -0.45
-      targetRightHipZ = -0.45
-      targetLeftKneeZ = 1.15
-      targetRightKneeZ = 1.15
+      // CABECEIO / PASSE DE CABEÇA: flexão de impulsão vertical
+      targetLeftHipZ = -0.32
+      targetRightHipZ = -0.32
+      targetLeftKneeZ = 0.95
+      targetRightKneeZ = 0.95
+    } else if (isChapa) {
+      // CHAPA: abertura de perna com rotação externa de quadril (mostrando a face interna do pé)
+      targetRightHipZ = 0.96
+      targetRightHipX = 0.86
+      targetRightKneeZ = 0.78
+      targetLeftHipZ = -0.22
+      targetLeftKneeZ = 0.38
     } else if (isPeito) {
+      // PEITO: base baixa com joelhos flexionados entrando embaixo da trajetória da bola
       targetLeftHipZ = -0.2
       targetRightHipZ = 0.2
-      targetLeftKneeZ = 0.48
-      targetRightKneeZ = 0.48
+      targetLeftKneeZ = 0.55
+      targetRightKneeZ = 0.55
     } else if (isMoving) {
       const legAmp = Math.min(0.78, 0.45 + speed * 0.07)
       const swing = Math.sin(t) * legAmp
@@ -163,23 +171,39 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       rightKneeRef.current.rotation.z = THREE.MathUtils.lerp(rightKneeRef.current.rotation.z, targetRightKneeZ, 0.28)
     }
 
-    // 3. TRONCO E RESPIRAÇÃO (Postura atlética com foco constante na rede)
+    // 3. TRONCO E CABEÇA (Postura atlética e impacto da testada)
     let targetTorsoZ = 0
-    if (isPeito) {
-      targetTorsoZ = -0.48
+    let targetHeadZ = 0
+
+    if (isAtaque) {
+      // ATAQUE DE CABEÇA: tronco flete com força para frente projetando a testada para baixo
+      targetTorsoZ = 0.58
+      targetHeadZ = 0.45
     } else if (isCabeca) {
-      targetTorsoZ = 0.46
+      // CABECEIO: tronco arqueia e cabeceia na altura da bola
+      targetTorsoZ = 0.40
+      targetHeadZ = 0.30
+    } else if (isPeito) {
+      // PEITO: tronco estufa e projeta a caixa torácica para cima e para trás
+      targetTorsoZ = -0.52
+      targetHeadZ = -0.32
     } else if (isChapa) {
-      targetTorsoZ = -0.28
+      // CHAPA: tronco compensa o golpe recuando suavemente
+      targetTorsoZ = -0.25
+      targetHeadZ = 0.15
     } else if (isMoving) {
-      // Leve dinamismo atlético nas passadas mantendo peito e olhos fixos na rede
       targetTorsoZ = 0.08 + Math.sin(t * 2) * 0.025
+      targetHeadZ = 0
     } else {
       targetTorsoZ = 0.05 + Math.sin(currTime * 2.2) * 0.018
+      targetHeadZ = Math.sin(currTime * 1.5) * 0.012
     }
 
     if (torsoRef.current) {
       torsoRef.current.rotation.z = THREE.MathUtils.lerp(torsoRef.current.rotation.z, targetTorsoZ, 0.25)
+    }
+    if (headRef.current) {
+      headRef.current.rotation.z = THREE.MathUtils.lerp(headRef.current.rotation.z, targetHeadZ, 0.28)
     }
 
     // 4. BRAÇOS E COTOVELOS
@@ -197,22 +221,32 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       targetLeftElbowZ = -0.4
       targetRightElbowZ = -0.4
     } else if (isPeito) {
-      targetLeftShoulderX = -0.85
-      targetRightShoulderX = 0.85
+      // PEITO: braços bem abertos para trás dando estabilidade
+      targetLeftShoulderX = -0.92
+      targetRightShoulderX = 0.92
       targetLeftElbowZ = -0.45
       targetRightElbowZ = -0.45
-    } else if (isAtaque || isCabeca) {
-      targetLeftShoulderZ = -1.0
-      targetRightShoulderZ = -1.0
-      targetLeftShoulderX = -0.4
-      targetRightShoulderX = 0.4
-      targetLeftElbowZ = -0.3
-      targetRightElbowZ = -0.3
+    } else if (isAtaque) {
+      // ATAQUE DE CABEÇA: braços flexionados para impulsão e equilíbrio no salto
+      targetLeftShoulderZ = -0.55
+      targetRightShoulderZ = -0.55
+      targetLeftShoulderX = -0.45
+      targetRightShoulderX = 0.45
+      targetLeftElbowZ = -0.85
+      targetRightElbowZ = -0.85
+    } else if (isCabeca) {
+      targetLeftShoulderZ = -0.7
+      targetRightShoulderZ = -0.7
+      targetLeftShoulderX = -0.35
+      targetRightShoulderX = 0.35
+      targetLeftElbowZ = -0.5
+      targetRightElbowZ = -0.5
     } else if (isChapa) {
-      targetLeftShoulderX = -0.7
-      targetRightShoulderX = 0.7
-      targetLeftElbowZ = -0.8
-      targetRightElbowZ = -0.8
+      // CHAPA: braços abertos em cruz para manter equilíbrio
+      targetLeftShoulderX = -0.82
+      targetRightShoulderX = 0.82
+      targetLeftElbowZ = -0.85
+      targetRightElbowZ = -0.85
     } else if (isMoving) {
       const swing = Math.sin(t) * 0.65
       targetLeftShoulderZ = -swing

@@ -58,7 +58,7 @@ export function CoachGuideModal({ open, onClose, onTryPreset }: CoachGuideModalP
             </div>
             <h4 className="font-bold text-sm text-white">Grave a Passada na Areia</h4>
             <p className="text-[11px] text-gray-400 leading-relaxed">
-              Clique em <strong className="text-[#c6f432]">"Gravar Trajeto na Areia"</strong>. Basta clicar onde o aluno corre e escolher o fundamento (<strong className="text-white">Chapa, Peito, Cabeceio, Shark</strong>).
+              Clique em <strong className="text-[#c6f432]">"Gravar Trajeto na Areia"</strong>. Basta clicar onde o aluno corre e escolher o fundamento (<strong className="text-white">Chapa, Peito, Cabeceio, Ataque de Cabeça</strong>).
             </p>
           </div>
 

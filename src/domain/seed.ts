@@ -71,12 +71,12 @@ export function seedFrenteECostas(): Exercise {
   return ex
 }
 
-/** Exercício 2: Recepção, Levantamento e Ataque (Shark Attack) com trajetória da bola. */
+/** Exercício 2: Recepção, Levantamento e Ataque de Cabeça com trajetória da bola. */
 export function seedAtaqueCompleto(): Exercise {
-  const ex = createExercise('Recepção, Levantamento e Ataque')
+  const ex = createExercise('Recepção, Levantamento e Ataque de Cabeça')
   ex.meta = {
     ...ex.meta,
-    objective: 'Simular a sequência ofensiva clássica do futevôlei: saque adversário, recepção perfeita, levantamento alto na rede e finalização de ataque.',
+    objective: 'Simular a sequência ofensiva clássica do futevôlei: saque adversário, recepção perfeita, levantamento alto na rede e finalização com ataque de cabeça.',
     fundamentals: ['recepcao', 'levantamento', 'ataque', 'peito', 'chapa'],
     level: 'intermediate',
     participantsMin: 2,
@@ -86,8 +86,8 @@ export function seedAtaqueCompleto(): Exercise {
     reps: 8,
     restSec: 45,
     instructions:
-      '1. Professor lança bola profunda do outro lado da quadra.\n2. Aluno 1 recepciona de peito/chapa direcionando para a fita da rede.\n3. Aluno 2 corre para a rede e executa o levantamento alto e macio.\n4. Aluno 1 aproxima e ataca de Shark Attack ou cabeçada diagonal.',
-    notes: 'O levantador deve priorizar altura e distância de 50cm da rede para o atacante ter espaço.',
+      '1. Professor lança bola profunda do outro lado da quadra.\n2. Aluno 1 recepciona de peito/chapa direcionando para a fita da rede.\n3. Aluno 2 corre para a rede e executa o levantamento alto e macio.\n4. Aluno 1 aproxima com impulsão e ataca de cabeça direcionando para a quadra adversária.',
+    notes: 'O levantador deve priorizar altura e distância de 50cm da rede para o atacante ter espaço para saltar e testar.',
   }
 
   const p1Id = uid() // Aluno 1 (Receptor / Atacante)
@@ -153,7 +153,7 @@ export function seedAtaqueCompleto(): Exercise {
         { id: uid(), time: 0, position: { x: 5.0, z: 0 }, height: 1.5 },
         { id: uid(), time: 2.2, position: { x: -5.2, z: -1.8 }, height: 1.1, action: 'Recepção' },
         { id: uid(), time: 4.5, position: { x: -1.2, z: 0.5 }, height: 2.3, action: 'Levantamento' },
-        { id: uid(), time: 6.8, position: { x: -0.8, z: 0.2 }, height: 2.4, action: 'Shark Attack' },
+        { id: uid(), time: 6.8, position: { x: -0.8, z: 0.2 }, height: 2.4, action: 'Ataque Cabeça' },
         { id: uid(), time: 8.2, position: { x: 4.8, z: -2.2 }, height: 0.11 },
         { id: uid(), time: 9.0, position: { x: 4.8, z: -2.2 }, height: 0.11 },
       ],
@@ -162,7 +162,7 @@ export function seedAtaqueCompleto(): Exercise {
         { id: uid(), time: 0, position: { x: -5.5, z: -1.8 }, rotation: 0 },
         { id: uid(), time: 2.2, position: { x: -5.2, z: -1.8 }, rotation: 10, action: '🏐 Peito' },
         { id: uid(), time: 4.5, position: { x: -3.5, z: -0.8 }, rotation: 15 },
-        { id: uid(), time: 6.8, position: { x: -1.2, z: 0.1 }, rotation: 10, action: '💥 Shark!' },
+        { id: uid(), time: 6.8, position: { x: -1.2, z: 0.1 }, rotation: 10, action: '🎯 Ataque Cabeça' },
         { id: uid(), time: 8.5, position: { x: -4.0, z: -1.5 }, rotation: 0 },
         { id: uid(), time: 9.0, position: { x: -5.5, z: -1.8 }, rotation: 0 },
       ],
