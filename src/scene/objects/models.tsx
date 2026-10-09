@@ -88,21 +88,21 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
         const absDt = Math.abs(dt)
 
         if (act.includes('ataque')) {
-          // Janela de salto de ataque na rede: 1.0s de impulsão e aterrissagem
-          if (absDt < 0.52) {
+          // Janela de salto de ataque na rede: 1.1s de impulsão e aterrissagem
+          if (absDt < 0.55) {
             isAtaque = true
-            const norm = absDt / 0.52
-            // Parábola de física de salto: no pico (dt = 0) atinge 0.98m!
-            // Com 1.75m de altura base, o topo da cabeça alcança 2.73m (bem acima da rede de 2.20m!)
+            const norm = absDt / 0.55
+            // Parábola de física de salto: no pico (dt = 0) atinge 1.10m!
+            // Com 1.75m de altura base, o topo da cabeça alcança 2.85m (bem acima da rede de 2.20m!)
             const curve = Math.max(0, 1 - norm * norm)
-            jumpElev = Math.max(jumpElev, 0.98 * curve)
+            jumpElev = Math.max(jumpElev, 1.10 * curve)
           }
         } else if (act.includes('cabeça') || act.includes('cabeca')) {
-          if (absDt < 0.44) {
+          if (absDt < 0.45) {
             isCabeca = true
-            const norm = absDt / 0.44
+            const norm = absDt / 0.45
             const curve = Math.max(0, 1 - norm * norm)
-            jumpElev = Math.max(jumpElev, 0.62 * curve)
+            jumpElev = Math.max(jumpElev, 0.65 * curve)
           }
         } else if (act.includes('chapa') && absDt < 0.50) {
           isChapa = true
@@ -112,27 +112,37 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       }
     }
 
-    // Se estiver se deslocando e não estiver saltando, adiciona a oscilação natural da corrida
-    let targetElev = jumpElev
-    if (jumpElev === 0 && isMoving) {
-      targetElev = Math.abs(Math.sin(t * 2)) * 0.052
+    // Se estiver em salto técnico (ataque ou cabeceio), segue com alta responsividade a curva parabólica
+    // garantindo que atinja o pico completo de 1.10m no ataque sobre a rede de 2.20m
+    if (jumpElev > 0) {
+      rootGroupRef.current.position.y = THREE.MathUtils.lerp(
+        rootGroupRef.current.position.y,
+        jumpElev,
+        0.85
+      )
+    } else if (isMoving) {
+      const runBob = Math.abs(Math.sin(t * 2)) * 0.052
+      rootGroupRef.current.position.y = THREE.MathUtils.lerp(
+        rootGroupRef.current.position.y,
+        runBob,
+        0.35
+      )
+    } else {
+      rootGroupRef.current.position.y = THREE.MathUtils.lerp(
+        rootGroupRef.current.position.y,
+        0,
+        0.35
+      )
     }
-
-    // O salto segue a curva física com lerp ágil para resposta instantânea
-    rootGroupRef.current.position.y = THREE.MathUtils.lerp(
-      rootGroupRef.current.position.y,
-      targetElev,
-      0.35
-    )
 
     // Atualiza a sombra no solo: fica fixa na areia e diminui proporcionalmente à altura do salto
     if (shadowMeshRef.current) {
       const currentY = rootGroupRef.current.position.y
-      const shadowScale = Math.max(0.4, 1 - currentY * 0.45)
+      const shadowScale = Math.max(0.35, 1 - currentY * 0.45)
       shadowMeshRef.current.scale.set(shadowScale, shadowScale, 1)
       const mat = shadowMeshRef.current.material as THREE.MeshBasicMaterial
       if (mat) {
-        mat.opacity = Math.max(0.12, 0.38 - currentY * 0.25)
+        mat.opacity = Math.max(0.10, 0.38 - currentY * 0.25)
       }
     }
 
@@ -577,7 +587,8 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
         </group>
       </group>
     </group>
-  )
+  </group>
+)
 }
 
 export function DirectionArrow({ color, distance }: { color: string; distance: number }) {
