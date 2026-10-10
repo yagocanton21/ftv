@@ -14,6 +14,22 @@ function migrate(raw: unknown): unknown {
   }
   if (data.schemaVersion === undefined) data.schemaVersion = 1
 
+  // Se houver keyframes com ações antigas (ex: 'shark'), migra automaticamente para '🎯 Ataque Cabeça'
+  if (data.timeline?.keyframes && typeof data.timeline.keyframes === 'object') {
+    for (const keyframesArr of Object.values(data.timeline.keyframes)) {
+      if (Array.isArray(keyframesArr)) {
+        for (const kf of keyframesArr) {
+          if (kf && typeof kf === 'object') {
+            const kfObj = kf as { action?: string }
+            if (typeof kfObj.action === 'string' && kfObj.action.toLowerCase().includes('shark')) {
+              kfObj.action = '🎯 Ataque Cabeça'
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Se o exercício antigo carregado do IndexedDB não possuía timeline, gera animação para o aluno
   const keyframesMap = data.timeline?.keyframes ?? {}
   const hasKeyframes = Object.values(keyframesMap).some((arr) => Array.isArray(arr) && arr.length > 0)

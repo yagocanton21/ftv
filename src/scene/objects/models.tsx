@@ -79,6 +79,7 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
     let isCabeca = false
     let isChapa = false
     let isPeito = false
+    let attackPhaseDt = 0
 
     if (keyframes && keyframes.length > 0) {
       for (const kf of keyframes) {
@@ -87,22 +88,32 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
         const dt = currTime - kf.time
         const absDt = Math.abs(dt)
 
-        if (act.includes('ataque')) {
-          // Janela de salto de ataque na rede: 1.1s de impulsão e aterrissagem
-          if (absDt < 0.55) {
+        // Reconhece qualquer termo ofensivo (ataque, shark, cortada, cravada, smash, ponto)
+        const isAttackAct =
+          act.includes('ataque') ||
+          act.includes('shark') ||
+          act.includes('cortad') ||
+          act.includes('cravad') ||
+          act.includes('smash') ||
+          act.includes('ponto')
+
+        if (isAttackAct) {
+          // Janela generosa de salto de ataque na rede: 1.3s total (0.65s subida, 0.65s descida)
+          if (absDt < 0.65) {
             isAtaque = true
-            const norm = absDt / 0.55
-            // Parábola de física de salto: no pico (dt = 0) atinge 1.10m!
-            // Com 1.75m de altura base, o topo da cabeça alcança 2.85m (bem acima da rede de 2.20m!)
+            attackPhaseDt = dt
+            const norm = absDt / 0.65
+            // Parábola de física de salto: no ápice (dt = 0) atinge 1.15m de elevação vertical!
+            // Com 1.75m de altura do atleta, a cabeça alcança 2.90m (dominando a rede de 2.20m!)
             const curve = Math.max(0, 1 - norm * norm)
-            jumpElev = Math.max(jumpElev, 1.10 * curve)
+            jumpElev = Math.max(jumpElev, 1.15 * curve)
           }
         } else if (act.includes('cabeça') || act.includes('cabeca')) {
-          if (absDt < 0.45) {
+          if (absDt < 0.50) {
             isCabeca = true
-            const norm = absDt / 0.45
+            const norm = absDt / 0.50
             const curve = Math.max(0, 1 - norm * norm)
-            jumpElev = Math.max(jumpElev, 0.65 * curve)
+            jumpElev = Math.max(jumpElev, 0.70 * curve)
           }
         } else if (act.includes('chapa') && absDt < 0.50) {
           isChapa = true
@@ -112,14 +123,10 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       }
     }
 
-    // Se estiver em salto técnico (ataque ou cabeceio), segue com alta responsividade a curva parabólica
-    // garantindo que atinja o pico completo de 1.10m no ataque sobre a rede de 2.20m
+    // Aplicação da elevação vertical: no salto segue diretamente a curva física parabólica calculada
+    // sem atenuação de lerp, garantindo explosão e alcance da altura máxima no ar!
     if (jumpElev > 0) {
-      rootGroupRef.current.position.y = THREE.MathUtils.lerp(
-        rootGroupRef.current.position.y,
-        jumpElev,
-        0.85
-      )
+      rootGroupRef.current.position.y = jumpElev
     } else if (isMoving) {
       const runBob = Math.abs(Math.sin(t * 2)) * 0.052
       rootGroupRef.current.position.y = THREE.MathUtils.lerp(
@@ -224,9 +231,16 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
     let targetHeadZ = 0
 
     if (isAtaque) {
-      // ATAQUE DE CABEÇA: tronco flete com força para frente projetando a testada para baixo
-      targetTorsoZ = 0.58
-      targetHeadZ = 0.45
+      // ATAQUE DE CABEÇA:
+      // Na subida (attackPhaseDt < -0.05), arqueia o tronco preparando o golpe
+      // No ápice e descida (attackPhaseDt >= -0.05), desfere a testada forte para frente/baixo
+      if (attackPhaseDt < -0.05) {
+        targetTorsoZ = -0.30
+        targetHeadZ = -0.22
+      } else {
+        targetTorsoZ = 0.62
+        targetHeadZ = 0.52
+      }
     } else if (isCabeca) {
       // CABECEIO: tronco arqueia e cabeceia na altura da bola
       targetTorsoZ = 0.40
@@ -275,13 +289,23 @@ export function PlayerModel({ obj }: { obj: PlayerObject }) {
       targetLeftElbowZ = -0.45
       targetRightElbowZ = -0.45
     } else if (isAtaque) {
-      // ATAQUE DE CABEÇA: braços flexionados para impulsão e equilíbrio no salto
-      targetLeftShoulderZ = -0.55
-      targetRightShoulderZ = -0.55
-      targetLeftShoulderX = -0.45
-      targetRightShoulderX = 0.45
-      targetLeftElbowZ = -0.85
-      targetRightElbowZ = -0.85
+      if (attackPhaseDt < -0.05) {
+        // Subida: braços sobem ajudando a impulsão
+        targetLeftShoulderZ = 0.55
+        targetRightShoulderZ = 0.55
+        targetLeftShoulderX = -0.35
+        targetRightShoulderX = 0.35
+        targetLeftElbowZ = -0.60
+        targetRightElbowZ = -0.60
+      } else {
+        // Golpe e queda: braços abertos para trás equilibrando
+        targetLeftShoulderZ = -0.65
+        targetRightShoulderZ = -0.65
+        targetLeftShoulderX = -0.50
+        targetRightShoulderX = 0.50
+        targetLeftElbowZ = -0.85
+        targetRightElbowZ = -0.85
+      }
     } else if (isCabeca) {
       targetLeftShoulderZ = -0.7
       targetRightShoulderZ = -0.7
