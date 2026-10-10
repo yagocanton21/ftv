@@ -152,38 +152,14 @@ export function TimelineBar() {
     )
   }
 
-  // 3. ADICIONAR NOVO PASSO (+2 segundos)
-  const handleAddNextStep = (actionBadge?: string) => {
+  // 3. ADICIONAR NOVO PASSO (clicando direto na areia)
+  const handleAddNextStep = () => {
     if (!selectedObject) {
       toast.info('Selecione um jogador na areia para adicionar o passo')
       return
     }
-
-    const lastKf = objectKeyframes[objectKeyframes.length - 1]
-    const nextTime = round(lastKf ? lastKf.time + 2.2 : 2.0, 1)
-    const targetTime = Math.min(60, Math.max(0.5, nextTime))
-
-    if (targetTime > duration) {
-      const newD = Math.ceil(targetTime + 2)
-      setDuration(newD)
-      setTimelineDuration(newD)
-    }
-
-    seek(targetTime)
-
-    const kf = {
-      id: uid(),
-      time: targetTime,
-      position: { ...selectedObject.position },
-      rotation: selectedObject.rotation,
-      height: selectedObject.type === 'ball' ? selectedObject.height : undefined,
-      action: actionBadge || undefined,
-    }
-
-    addOrUpdateKeyframe(selectedObject.id, kf)
-    toast.success(
-      `Passo adicionado aos ${targetTime}s (${actionBadge || 'Corrida'})! Agora arraste o jogador para a posição desejada.`
-    )
+    setRecordingPlayerId(selectedObject.id)
+    toast.info(`👉 Clique na areia onde ${selectedObject.type === 'player' ? selectedObject.name : 'o atleta'} deve ir!`)
   }
 
   // Grava na posição e segundo exato
@@ -300,15 +276,15 @@ export function TimelineBar() {
                 <span>Gravar Trajeto</span>
               </button>
 
-              {/* Botão + Novo Passo (+2s) */}
+              {/* Botão + Novo Passo na areia */}
               {selectedObject && (
                 <button
                   onClick={() => handleAddNextStep()}
-                  title="Avança 2 segundos e cria o próximo passo da corrida na areia"
+                  title="Clique na areia para marcar o próximo ponto deste atleta"
                   className="flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-bold bg-[#1a231e] hover:bg-[#233028] text-white border border-[#233028] transition-all"
                 >
                   <Plus className="w-3 h-3 stroke-[3] text-[#c6f432]" />
-                  <span>+ Passo</span>
+                  <span>+ Passo na Areia</span>
                 </button>
               )}
 

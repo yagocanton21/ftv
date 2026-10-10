@@ -6,7 +6,6 @@ import { degToRad } from '@/lib/utils'
 import type { BallObject, SceneObject } from '@/domain/types'
 import { useObjectInteraction } from '@/scene/interaction/useObjectInteraction'
 import { ObjectModel, footprintRadius } from './models'
-import { RotationHandle } from './RotationHandle'
 import { useUiStore } from '@/store/uiStore'
 import { useDocumentStore } from '@/store/documentStore'
 import { useSimulationStore } from '@/store/simulationStore'
@@ -27,7 +26,6 @@ export const SceneObjectNode = memo(function SceneObjectNode({
   previewPos,
   previewRot,
 }: SceneObjectNodeProps) {
-  const mode = useUiStore((s) => s.mode)
   const isDragging = useUiStore((s) => s.isDragging)
   const handlers = useObjectInteraction(obj)
 
@@ -157,16 +155,6 @@ export const SceneObjectNode = memo(function SceneObjectNode({
             />
           </div>
         </Html>
-
-        {/* Alça de rotação interativa quando selecionado */}
-        {isSelected && !obj.locked && mode === 'edit' && (
-          <RotationHandle
-            obj={obj}
-            radius={radius}
-            centerPos={obj.position}
-            currentRotationDeg={obj.rotation}
-          />
-        )}
       </group>
     </>
   )

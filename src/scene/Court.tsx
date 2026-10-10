@@ -58,30 +58,20 @@ function Ground({ court }: { court: CourtSettings }) {
   }
 
   const onClick = (e: ThreeEvent<MouseEvent>) => {
+    if (e.delta > CLICK_TOLERANCE) return
+    e.stopPropagation()
+
     const ui = useUiStore.getState()
 
     if (ui.recordingPlayerId) {
-      e.stopPropagation()
       handleGroundAction({ x: e.point.x, z: e.point.z })
       return
     }
-
-    if (e.delta > CLICK_TOLERANCE) return
-    e.stopPropagation()
 
     if (ui.tool !== 'select') {
       placeObject(ui.tool, clampToPlayArea({ x: e.point.x, z: e.point.z }, court))
     } else if (!e.shiftKey) {
       ui.clearSelection()
-    }
-  }
-
-  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (e.button !== 0) return
-    const ui = useUiStore.getState()
-    if (ui.recordingPlayerId) {
-      e.stopPropagation()
-      handleGroundAction({ x: e.point.x, z: e.point.z })
     }
   }
 
@@ -100,7 +90,6 @@ function Ground({ court }: { court: CourtSettings }) {
         rotation-x={-Math.PI / 2}
         receiveShadow
         onClick={onClick}
-        onPointerUp={onPointerUp}
       >
         <planeGeometry args={[160, 160]} />
         <meshStandardMaterial color="#cbb89d" roughness={0.92} metalness={0.0} />
@@ -112,7 +101,6 @@ function Ground({ court }: { court: CourtSettings }) {
         rotation-x={-Math.PI / 2}
         receiveShadow
         onClick={onClick}
-        onPointerUp={onPointerUp}
         onPointerMove={placing ? onMove : undefined}
       >
         <planeGeometry args={[pitWidth, pitDepth, 64, 64]} />

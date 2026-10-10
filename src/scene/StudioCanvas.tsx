@@ -44,12 +44,15 @@ export function StudioCanvas() {
   const isPlaying = useSimulationStore((s) => s.isPlaying)
   const isDragging = useUiStore((s) => s.isDragging)
   const hoveredId = useUiStore((s) => s.hoveredId)
+  const recordingPlayerId = useUiStore((s) => s.recordingPlayerId)
   const tool = useUiStore((s) => s.tool)
 
   const cursorClass = isDragging
     ? 'cursor-grabbing'
+    : recordingPlayerId
+    ? 'cursor-crosshair'
     : hoveredId
-    ? 'cursor-grab'
+    ? 'cursor-pointer'
     : tool !== 'select'
     ? 'cursor-crosshair'
     : 'cursor-default'
