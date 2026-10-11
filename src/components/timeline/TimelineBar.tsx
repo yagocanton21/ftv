@@ -13,7 +13,7 @@ import {
 import { useSimulationStore } from '@/store/simulationStore'
 import { useDocumentStore } from '@/store/documentStore'
 import { useUiStore } from '@/store/uiStore'
-import { ACTION_PRESETS, ensureExerciseKeyframes } from '@/domain/simulation'
+import { ACTION_PRESETS } from '@/domain/simulation'
 import { uid, round } from '@/lib/utils'
 import { toast } from 'sonner'
 import { PlaybackControls } from './PlaybackControls'
@@ -55,19 +55,7 @@ export function TimelineBar() {
     }
   }, [recordingPlayerId])
 
-  // Garante animação se o exercício não tiver keyframes
-  useEffect(() => {
-    ensureExerciseKeyframes(exercise, (kfs, d) => {
-      setKeyframesForExercise(kfs, d)
-      if (d) setDuration(d)
-    })
-  }, [exercise.id])
-
   const handleTogglePlay = () => {
-    ensureExerciseKeyframes(exercise, (kfs, d) => {
-      setKeyframesForExercise(kfs, d)
-      if (d) setDuration(d)
-    })
     togglePlay()
   }
 

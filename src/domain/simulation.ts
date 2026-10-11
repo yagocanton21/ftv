@@ -182,49 +182,9 @@ export function getInterpolatedState(
 }
 
 export function ensureExerciseKeyframes(
-  exercise: Exercise,
-  onApplyKeyframes: (keyframesMap: Record<string, Keyframe[]>, duration?: number) => void,
+  _exercise: Exercise,
+  _onApplyKeyframes: (keyframesMap: Record<string, Keyframe[]>, duration?: number) => void,
 ): boolean {
-  const currentObjectIds = new Set(exercise.objects.map((o) => o.id))
-  const keyframesMap = exercise.timeline?.keyframes ?? {}
-  const hasValidKeyframes = Object.entries(keyframesMap).some(
-    ([id, arr]) => currentObjectIds.has(id) && Array.isArray(arr) && arr.length > 0,
-  )
-  if (hasValidKeyframes) return false
-
-  const student =
-    exercise.objects.find((o) => o.type === 'player' && o.role === 'student') ||
-    exercise.objects.find((o) => o.type === 'player')
-  if (!student) return false
-
-  const cones = exercise.objects.filter((o) => o.type === 'cone')
-  const sortedCones = [...cones].sort((a, b) => b.position.x - a.position.x)
-  const coneFront = sortedCones[0]?.position ?? { x: -1.8, z: student.position.z }
-  const coneBack = sortedCones[1]?.position ?? { x: -7.2, z: student.position.z }
-
-  const studentKfs: Keyframe[] = [
-    { id: 'k1', time: 0, position: { ...student.position }, rotation: 0 },
-    { id: 'k2', time: 2.2, position: { ...coneFront }, rotation: 0, action: 'Cone Frente' },
-    { id: 'k3', time: 5.0, position: { ...coneBack }, rotation: 0, action: 'Cone Fundo' },
-    { id: 'k4', time: 7.5, position: { ...student.position }, rotation: 0, action: 'Base' },
-    { id: 'k5', time: 8.0, position: { ...student.position }, rotation: 0 },
-  ]
-
-  const newKeyframes: Record<string, Keyframe[]> = {
-    [student.id]: studentKfs,
-  }
-
-  const ball = exercise.objects.find((o) => o.type === 'ball')
-  if (ball) {
-    newKeyframes[ball.id] = [
-      { id: 'kb1', time: 0, position: { ...ball.position }, rotation: 0, height: 0.11 },
-      { id: 'kb2', time: 2.2, position: { ...coneFront }, rotation: 0, height: 1.8, action: 'Peito' },
-      { id: 'kb3', time: 4.0, position: { x: -3.0, z: student.position.z }, rotation: 0, height: 3.2 },
-      { id: 'kb4', time: 5.5, position: { ...coneBack }, rotation: 0, height: 1.7, action: 'Cabeça' },
-      { id: 'kb5', time: 8.0, position: { ...ball.position }, rotation: 0, height: 0.11 },
-    ]
-  }
-
-  onApplyKeyframes(newKeyframes, 8)
-  return true
+  // Nunca injeta keyframes automaticamente: o usuário tem total controle sobre sua timeline
+  return false
 }

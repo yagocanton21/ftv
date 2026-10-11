@@ -12,7 +12,6 @@ import { saveNow } from '@/services/projectActions'
 import { useDocumentStore } from '@/store/documentStore'
 import { useSimulationStore } from '@/store/simulationStore'
 import { useUiStore } from '@/store/uiStore'
-import { ensureExerciseKeyframes } from '@/domain/simulation'
 import { isTypingTarget } from '@/lib/utils'
 
 const CAMERA_KEYS: Record<string, CameraPreset> = { '1': 'top', '2': 'iso', '3': 'side', '4': 'end', '5': 'free' }
@@ -49,11 +48,6 @@ export function useKeyboardShortcuts() {
       // Espaço: Play / Pause da simulação
       if (e.code === 'Space' || key === ' ') {
         e.preventDefault()
-        const doc = useDocumentStore.getState()
-        ensureExerciseKeyframes(doc.exercise, (kfs, d) => {
-          doc.setKeyframesForExercise(kfs, d)
-          if (d) useSimulationStore.getState().setDuration(d)
-        })
         useSimulationStore.getState().togglePlay()
         return
       }

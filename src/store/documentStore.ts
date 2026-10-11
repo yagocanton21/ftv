@@ -55,47 +55,9 @@ export const useDocumentStore = create<DocumentState>()(
       exercise: createExercise(),
 
       load: (exercise) => {
-        // Se o exercício não tem keyframes válidos para os objetos da quadra, sintetiza animação
-        const currentObjectIds = new Set(exercise.objects.map((o) => o.id))
-        const keyframesMap = exercise.timeline?.keyframes ?? {}
-        const hasValidKeyframes = Object.entries(keyframesMap).some(
-          ([id, arr]) => currentObjectIds.has(id) && Array.isArray(arr) && arr.length > 0,
-        )
-
-        let finalEx = exercise
-        if (!hasValidKeyframes) {
-          const student =
-            exercise.objects.find((o) => o.type === 'player' && o.role === 'student') ||
-            exercise.objects.find((o) => o.type === 'player')
-
-          if (student) {
-            const cones = exercise.objects.filter((o) => o.type === 'cone')
-            const sortedCones = [...cones].sort((a, b) => b.position.x - a.position.x)
-            const coneFront = sortedCones[0]?.position ?? { x: -1.8, z: student.position.z }
-            const coneBack = sortedCones[1]?.position ?? { x: -7.2, z: student.position.z }
-
-            finalEx = {
-              ...exercise,
-              timeline: {
-                duration: 8,
-                keyframes: {
-                  ...keyframesMap,
-                  [student.id]: [
-                    { id: 'k1', time: 0, position: { ...student.position }, rotation: 0 },
-                    { id: 'k2', time: 2.2, position: { ...coneFront }, rotation: 0, action: 'Cone Frente' },
-                    { id: 'k3', time: 5.0, position: { ...coneBack }, rotation: 0, action: 'Cone Fundo' },
-                    { id: 'k4', time: 7.5, position: { ...student.position }, rotation: 0, action: 'Base' },
-                    { id: 'k5', time: 8.0, position: { ...student.position }, rotation: 0 },
-                  ],
-                },
-              },
-            }
-          }
-        }
-
-        set({ exercise: finalEx })
+        set({ exercise })
         useDocumentStore.temporal.getState().clear()
-        useSimulationStore.getState().setDuration(finalEx.timeline?.duration ?? 8)
+        useSimulationStore.getState().setDuration(exercise.timeline?.duration ?? 8)
         useSimulationStore.getState().reset()
       },
 

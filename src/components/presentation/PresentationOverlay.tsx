@@ -4,7 +4,6 @@ import { useDocumentStore } from '@/store/documentStore'
 import { useUiStore } from '@/store/uiStore'
 import { useSimulationStore } from '@/store/simulationStore'
 import { LEVEL_LABELS, FUNDAMENTAL_LABELS } from '@/domain/constants'
-import { ensureExerciseKeyframes } from '@/domain/simulation'
 import type { CameraPreset } from '@/domain/types'
 
 const PRESETS: { id: CameraPreset; label: string }[] = [
@@ -20,7 +19,6 @@ export function PresentationOverlay() {
   const currentCamera = useUiStore((s) => s.camera.preset)
   const setCameraPreset = useUiStore((s) => s.setCameraPreset)
   const exercise = useDocumentStore((s) => s.exercise)
-  const setKeyframesForExercise = useDocumentStore((s) => s.setKeyframesForExercise)
 
   const isPlaying = useSimulationStore((s) => s.isPlaying)
   const togglePlay = useSimulationStore((s) => s.togglePlay)
@@ -34,10 +32,6 @@ export function PresentationOverlay() {
   const setLoop = useSimulationStore((s) => s.setLoop)
 
   const handleTogglePlay = () => {
-    ensureExerciseKeyframes(exercise, (kfs, d) => {
-      setKeyframesForExercise(kfs, d)
-      if (d) setDuration(d)
-    })
     togglePlay()
   }
 
