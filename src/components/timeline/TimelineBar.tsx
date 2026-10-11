@@ -35,7 +35,6 @@ export function TimelineBar() {
   const setDuration = useSimulationStore((s) => s.setDuration)
 
   const exercise = useDocumentStore((s) => s.exercise)
-  const setKeyframesForExercise = useDocumentStore((s) => s.setKeyframesForExercise)
   const removeKeyframe = useDocumentStore((s) => s.removeKeyframe)
   const clearKeyframes = useDocumentStore((s) => s.clearKeyframes)
   const setTimelineDuration = useDocumentStore((s) => s.setTimelineDuration)

@@ -25,7 +25,6 @@ export function PresentationOverlay() {
   const reset = useSimulationStore((s) => s.reset)
   const currentTime = useSimulationStore((s) => s.currentTime)
   const duration = useSimulationStore((s) => s.duration)
-  const setDuration = useSimulationStore((s) => s.setDuration)
   const speed = useSimulationStore((s) => s.speed)
   const setSpeed = useSimulationStore((s) => s.setSpeed)
   const loop = useSimulationStore((s) => s.loop)
