@@ -24,6 +24,7 @@ export function SequenceRecorderModal() {
   const addOrUpdateKeyframe = useDocumentStore((s) => s.addOrUpdateKeyframe)
   const clearKeyframes = useDocumentStore((s) => s.clearKeyframes)
   const setTimelineDuration = useDocumentStore((s) => s.setTimelineDuration)
+  const syncBallAnimation = useDocumentStore((s) => s.syncBallAnimation)
 
   const duration = useSimulationStore((s) => s.duration)
   const setDuration = useSimulationStore((s) => s.setDuration)
@@ -91,8 +92,6 @@ export function SequenceRecorderModal() {
   }
 
   const playerName = player.type === 'player' ? player.name : 'Atleta'
-
-  const syncBallAnimation = useDocumentStore((s) => s.syncBallAnimation)
 
   const handleFinish = (withBall = false) => {
     const pId = player.id
