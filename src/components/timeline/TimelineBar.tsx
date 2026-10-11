@@ -6,6 +6,7 @@ import {
   Dumbbell,
   Trash2,
   X,
+  Plus,
   Minimize2,
   Maximize2,
 } from 'lucide-react'
@@ -260,6 +261,7 @@ export function TimelineBar() {
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#1f2a24]/60">
               <div className="flex items-center gap-1 text-[10px] text-gray-400 font-semibold shrink-0">
                 <span>Fundamento:</span>
+                <span className="text-[9px] text-gray-500 font-normal">({round(currentTime, 1)}s)</span>
               </div>
 
               <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
@@ -294,8 +296,8 @@ export function TimelineBar() {
           )}
 
           {/* Sequência Passo a Passo do Aluno Selecionado */}
-          {!compactMode && selectedObject && objectKeyframes.length > 0 && (
-            <div className="flex items-center gap-1 overflow-x-auto py-0.5 border-t border-[#1f2a24]/40 scrollbar-none">
+          {!compactMode && selectedObject && (
+            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 border-t border-[#1f2a24]/40 scrollbar-none">
               <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider pr-1 whitespace-nowrap shrink-0">
                 Passos ({objectKeyframes.length}):
               </span>
@@ -326,6 +328,16 @@ export function TimelineBar() {
                   </div>
                 )
               })}
+
+              {/* Botão direto para adicionar próximo passo */}
+              <button
+                onClick={handleMontarTreino}
+                title="Clique na quadra de areia para adicionar o próximo passo deste atleta"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#c6f432]/15 text-[#c6f432] hover:bg-[#c6f432]/25 border border-[#c6f432]/40 transition-all shrink-0 hover:scale-[1.02]"
+              >
+                <Plus className="w-3 h-3" />
+                <span>+ Próximo Passo na Areia</span>
+              </button>
             </div>
           )}
 
