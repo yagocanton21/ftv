@@ -3,8 +3,7 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
-  Footprints,
-  Plus,
+  Dumbbell,
   Trash2,
   X,
   Minimize2,
@@ -13,12 +12,10 @@ import {
 import { useSimulationStore } from '@/store/simulationStore'
 import { useDocumentStore } from '@/store/documentStore'
 import { useUiStore } from '@/store/uiStore'
-import { ACTION_PRESETS, type CircuitPreset, ensureExerciseKeyframes } from '@/domain/simulation'
-import type { SceneObject } from '@/domain/types'
+import { ACTION_PRESETS, ensureExerciseKeyframes } from '@/domain/simulation'
 import { uid, round } from '@/lib/utils'
 import { toast } from 'sonner'
 import { PlaybackControls } from './PlaybackControls'
-import { CircuitPresetsMenu } from './CircuitPresetsMenu'
 import { KeyframeTrack, type DisplayedKeyframe } from './KeyframeTrack'
 
 export function TimelineBar() {
@@ -37,7 +34,6 @@ export function TimelineBar() {
 
   const exercise = useDocumentStore((s) => s.exercise)
   const setKeyframesForExercise = useDocumentStore((s) => s.setKeyframesForExercise)
-  const addOrUpdateKeyframe = useDocumentStore((s) => s.addOrUpdateKeyframe)
   const removeKeyframe = useDocumentStore((s) => s.removeKeyframe)
   const clearKeyframes = useDocumentStore((s) => s.clearKeyframes)
   const setTimelineDuration = useDocumentStore((s) => s.setTimelineDuration)
@@ -48,7 +44,6 @@ export function TimelineBar() {
   const setRecordingPlayerId = useUiStore((s) => s.setRecordingPlayerId)
   const [collapsed, setCollapsed] = useState(false)
   const [compactMode, setCompactMode] = useState(false)
-  const [showPresetsMenu, setShowPresetsMenu] = useState(false)
 
   // Quando o professor clica para traçar trajeto na areia, recolhe a linha do tempo automaticamente
   useEffect(() => {
@@ -115,7 +110,7 @@ export function TimelineBar() {
     (k) => Math.abs(k.time - currentTime) < 0.2,
   )
 
-  // 1. ZERAR PONTOS
+  // ZERAR PONTOS
   const handleClearKeyframes = () => {
     if (selectedObject) {
       clearKeyframes(selectedObject.id)
@@ -130,63 +125,21 @@ export function TimelineBar() {
     }
   }
 
-  // 2. APLICAR CIRCUITO PRONTO (1 CLIQUE)
-  const handleApplyPreset = (preset: CircuitPreset, targetObj?: SceneObject) => {
-    const target = targetObj || selectedObject
-    if (!target) {
-      toast.info('Selecione um jogador na areia primeiro')
-      return
+  // MONTAR TREINO: Entra no modo de gravação interativa
+  const handleMontarTreino = () => {
+    const target = selectedObject?.type === 'player'
+      ? selectedObject
+      : (exercise.objects.find((o) => o.type === 'player') || null)
+    if (target) {
+      select([target.id])
+      setRecordingPlayerId(target.id)
+      toast.info(`Montando treino de ${target.name}! Clique nos pontos da quadra de areia.`)
+    } else {
+      toast.error('Adicione ao menos um jogador na quadra para montar o treino!')
     }
-    const cones = exercise.objects
-      .filter((o) => o.type === 'cone')
-      .map((c) => c.position)
-
-    const kfs = preset.getKeyframes(target.position, cones)
-    setKeyframesForExercise({ [target.id]: kfs }, preset.duration)
-    setDuration(preset.duration)
-    setTimelineDuration(preset.duration)
-    seek(0)
-    setShowPresetsMenu(false)
-    toast.success(
-      `Circuito "${preset.name}" aplicado a ${target.type === 'player' ? target.name : 'objeto'}! Aperte Play para ver.`
-    )
   }
 
-  // 3. ADICIONAR NOVO PASSO (+2 segundos)
-  const handleAddNextStep = (actionBadge?: string) => {
-    if (!selectedObject) {
-      toast.info('Selecione um jogador na areia para adicionar o passo')
-      return
-    }
-
-    const lastKf = objectKeyframes[objectKeyframes.length - 1]
-    const nextTime = round(lastKf ? lastKf.time + 2.2 : 2.0, 1)
-    const targetTime = Math.min(60, Math.max(0.5, nextTime))
-
-    if (targetTime > duration) {
-      const newD = Math.ceil(targetTime + 2)
-      setDuration(newD)
-      setTimelineDuration(newD)
-    }
-
-    seek(targetTime)
-
-    const kf = {
-      id: uid(),
-      time: targetTime,
-      position: { ...selectedObject.position },
-      rotation: selectedObject.rotation,
-      height: selectedObject.type === 'ball' ? selectedObject.height : undefined,
-      action: actionBadge || undefined,
-    }
-
-    addOrUpdateKeyframe(selectedObject.id, kf)
-    toast.success(
-      `Passo adicionado aos ${targetTime}s (${actionBadge || 'Corrida'})! Agora arraste o jogador para a posição desejada.`
-    )
-  }
-
-  // Grava na posição e segundo exato
+  // Grava na posição e segundo exato (usado pelos atalhos de fundamento)
   const handleRecordKeyframe = (actionBadge?: string) => {
     if (!selectedObject) {
       toast.info('Selecione um jogador ou bola na areia')
@@ -204,7 +157,7 @@ export function TimelineBar() {
       action: act,
     }
 
-    addOrUpdateKeyframe(selectedObject.id, kf)
+    useDocumentStore.getState().addOrUpdateKeyframe(selectedObject.id, kf)
     toast.success(
       `Ponto gravado aos ${t}s${act ? ` (${act})` : ''} para ${selectedObject.type === 'player' ? selectedObject.name : 'a bola'}`,
     )
@@ -248,7 +201,7 @@ export function TimelineBar() {
 
       {!collapsed && (
         <div className="w-full bg-[#121815]/95 backdrop-blur-md border border-[#1f2a24] rounded-2xl shadow-2xl p-2 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2">
-          {/* Linha superior: Controles de reprodução + Construtor de Sequência */}
+          {/* Linha superior: Controles de reprodução + Montar Treino */}
           <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
             <PlaybackControls
               isPlaying={isPlaying}
@@ -262,55 +215,19 @@ export function TimelineBar() {
               onSetLoop={setLoop}
             />
 
-            {/* Lado Direito: Ações da Sequência + Botão ZERAR PONTOS */}
+            {/* Lado Direito: Botão MONTAR TREINO + Zerar + Duração */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <CircuitPresetsMenu
-                open={showPresetsMenu}
-                onToggle={() => setShowPresetsMenu((v) => !v)}
-                selectedObject={selectedObject}
-                onApplyPreset={(p) => {
-                  const target = selectedObject?.type === 'player'
-                    ? selectedObject
-                    : (exercise.objects.find((o) => o.type === 'player') || null)
-                  if (target) {
-                    select([target.id])
-                    handleApplyPreset(p, target)
-                  }
-                }}
-              />
-
-              {/* Botão Interativo Principal: Gravar Trajeto clicando na areia */}
+              {/* ⭐ BOTÃO PRINCIPAL: Montar Treino */}
               <button
-                onClick={() => {
-                  const target = selectedObject?.type === 'player'
-                    ? selectedObject
-                    : (exercise.objects.find((o) => o.type === 'player') || null)
-                  if (target) {
-                    select([target.id])
-                    setRecordingPlayerId(target.id)
-                    toast.info(`Gravando ${target.name}! Clique nos pontos da quadra de areia.`)
-                  } else {
-                    toast.error('Adicione ao menos um jogador para gravar trajeto!')
-                  }
-                }}
-                title="Clique na quadra de areia para montar o trajeto passo a passo e escolher os fundamentos"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-black bg-[#c6f432] text-[#0b0f0d] hover:bg-[#b0de26] transition-all shadow-md animate-pulse hover:animate-none"
+                onClick={handleMontarTreino}
+                title="Monte o treino clicando na quadra de areia, escolhendo fundamentos passo a passo"
+                className="group relative flex items-center gap-2 px-4 py-1.5 rounded-xl text-[12px] font-black bg-gradient-to-r from-[#c6f432] to-[#a8d929] text-[#0b0f0d] hover:from-[#d4ff3a] hover:to-[#c6f432] transition-all shadow-lg shadow-[#c6f432]/25 hover:shadow-[#c6f432]/40 hover:scale-[1.03] active:scale-[0.98]"
               >
-                <Footprints className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Gravar Trajeto</span>
+                <Dumbbell className="w-4 h-4 stroke-[2.5]" />
+                <span>Montar Treino</span>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#c6f432] animate-ping opacity-75" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#c6f432]" />
               </button>
-
-              {/* Botão + Novo Passo (+2s) */}
-              {selectedObject && (
-                <button
-                  onClick={() => handleAddNextStep()}
-                  title="Avança 2 segundos e cria o próximo passo da corrida na areia"
-                  className="flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-bold bg-[#1a231e] hover:bg-[#233028] text-white border border-[#233028] transition-all"
-                >
-                  <Plus className="w-3 h-3 stroke-[3] text-[#c6f432]" />
-                  <span>+ Passo</span>
-                </button>
-              )}
 
               {/* BOTÃO ZERAR PONTOS */}
               <button
@@ -338,7 +255,7 @@ export function TimelineBar() {
             </div>
           </div>
 
-          {/* Atalhos Rápidos de Fundamentos Esportivos */}
+          {/* Atalhos Rápidos de Fundamentos Esportivos (só com jogador selecionado) */}
           {!compactMode && selectedObject && (
             <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#1f2a24]/60">
               <div className="flex items-center gap-1 text-[10px] text-gray-400 font-semibold shrink-0">
