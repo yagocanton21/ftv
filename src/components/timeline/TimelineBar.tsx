@@ -27,6 +27,7 @@ export function TimelineBar() {
   const duration = useSimulationStore((s) => s.duration)
 
   const togglePlay = useSimulationStore((s) => s.togglePlay)
+  const play = useSimulationStore((s) => s.play)
   const reset = useSimulationStore((s) => s.reset)
   const seek = useSimulationStore((s) => s.seek)
   const setSpeed = useSimulationStore((s) => s.setSpeed)
@@ -38,6 +39,7 @@ export function TimelineBar() {
   const removeKeyframe = useDocumentStore((s) => s.removeKeyframe)
   const clearKeyframes = useDocumentStore((s) => s.clearKeyframes)
   const setTimelineDuration = useDocumentStore((s) => s.setTimelineDuration)
+  const syncBallAnimation = useDocumentStore((s) => s.syncBallAnimation)
 
   const selectedIds = useUiStore((s) => s.selectedIds)
   const select = useUiStore((s) => s.select)
@@ -140,6 +142,23 @@ export function TimelineBar() {
     }
   }
 
+  // SINCRONIZAR BOLA: Calcula a trajetória aérea 3D da bola em parábola
+  const handleSyncBall = () => {
+    const targetId = selectedObject?.type === 'player' ? selectedObject.id : undefined
+    const res = syncBallAnimation(targetId)
+    if (res.success) {
+      seek(0)
+      play()
+      toast.success(
+        res.coachAdded
+          ? '🏐 Bola e Treinador adicionados! Voo parabólico da bola sincronizado.'
+          : '🏐 Bola 3D sincronizada com os fundamentos do atleta! Reproduzindo no ar...',
+      )
+    } else {
+      toast.error('Grave ao menos um trajeto com passos para sincronizar a bola!')
+    }
+  }
+
   // Grava na posição e segundo exato (usado pelos atalhos de fundamento)
   const handleRecordKeyframe = (actionBadge?: string) => {
     if (!selectedObject) {
@@ -222,12 +241,21 @@ export function TimelineBar() {
               <button
                 onClick={handleMontarTreino}
                 title="Monte o treino clicando na quadra de areia, escolhendo fundamentos passo a passo"
-                className="group relative flex items-center gap-2 px-4 py-1.5 rounded-xl text-[12px] font-black bg-gradient-to-r from-[#c6f432] to-[#a8d929] text-[#0b0f0d] hover:from-[#d4ff3a] hover:to-[#c6f432] transition-all shadow-lg shadow-[#c6f432]/25 hover:shadow-[#c6f432]/40 hover:scale-[1.03] active:scale-[0.98]"
+                className="group relative flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[12px] font-black bg-gradient-to-r from-[#c6f432] to-[#a8d929] text-[#0b0f0d] hover:from-[#d4ff3a] hover:to-[#c6f432] transition-all shadow-lg shadow-[#c6f432]/25 hover:shadow-[#c6f432]/40 hover:scale-[1.03] active:scale-[0.98]"
               >
                 <Dumbbell className="w-4 h-4 stroke-[2.5]" />
                 <span>Montar Treino</span>
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#c6f432] animate-ping opacity-75" />
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#c6f432]" />
+              </button>
+
+              {/* ⭐ BOTÃO SINCRONIZAR BOLA */}
+              <button
+                onClick={handleSyncBall}
+                title="Sincroniza a bola em arcos parabólicos 3D voando até o atleta em cada fundamento"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-[#0b0f0d] hover:from-yellow-300 hover:to-amber-400 transition-all shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 hover:scale-[1.03] active:scale-[0.98]"
+              >
+                <span>🏐 Sincronizar Bola</span>
               </button>
 
               {/* BOTÃO ZERAR PONTOS */}
@@ -337,6 +365,15 @@ export function TimelineBar() {
               >
                 <Plus className="w-3 h-3" />
                 <span>+ Próximo Passo na Areia</span>
+              </button>
+
+              {/* Botão para sincronizar bola nos passos */}
+              <button
+                onClick={handleSyncBall}
+                title="Gera o voo 3D da bola para cada fundamento deste atleta"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-300 hover:bg-amber-500/25 border border-amber-500/40 transition-all shrink-0 hover:scale-[1.02]"
+              >
+                <span>🏐 Sincronizar Bola</span>
               </button>
             </div>
           )}

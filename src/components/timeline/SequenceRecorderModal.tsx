@@ -92,12 +92,22 @@ export function SequenceRecorderModal() {
 
   const playerName = player.type === 'player' ? player.name : 'Atleta'
 
-  const handleFinish = () => {
+  const syncBallAnimation = useDocumentStore((s) => s.syncBallAnimation)
+
+  const handleFinish = (withBall = false) => {
+    const pId = player.id
     setPendingStepPoint(null)
     setRecordingPlayerId(null)
+    if (withBall) {
+      syncBallAnimation(pId)
+    }
     seek(0)
     play()
-    toast.success(`Trajeto de ${playerName} concluído com ${keyframes.length} passos! Reproduzindo...`)
+    toast.success(
+      withBall
+        ? `Trajeto de ${playerName} e bola 3D sincronizados! Reproduzindo...`
+        : `Trajeto de ${playerName} concluído com ${keyframes.length} passos! Reproduzindo...`,
+    )
   }
 
   const handleClear = () => {
@@ -205,7 +215,15 @@ export function SequenceRecorderModal() {
         {/* Botões de Ação */}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
-            onClick={handleFinish}
+            onClick={() => handleFinish(true)}
+            title="Conclui o treino e calcula automaticamente os voos e arcos da bola 3D sincronizados com o atleta"
+            className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-yellow-300 hover:to-amber-400 text-[#0b0f0d] font-black text-xs rounded-xl transition-all shadow-md hover:scale-[1.02]"
+          >
+            <span>🏐 Concluir c/ Bola</span>
+          </button>
+
+          <button
+            onClick={() => handleFinish(false)}
             className="flex items-center gap-1 px-2.5 py-1 bg-[#c6f432] hover:bg-[#b0de26] text-[#0b0f0d] font-bold text-xs rounded-xl transition-all shadow-md"
           >
             <Check className="w-3.5 h-3.5 stroke-[3]" />

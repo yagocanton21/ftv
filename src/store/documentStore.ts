@@ -3,6 +3,7 @@ import { temporal } from 'zundo'
 import { clampToPlayArea, cloneObject, createExercise } from '@/domain/factories'
 import type { CourtSettings, Exercise, ExerciseMeta, Keyframe, ObjectPatch, SceneObject } from '@/domain/types'
 import { useSimulationStore } from './simulationStore'
+import { generateBallKeyframesForExercise } from '@/domain/ballSync'
 import { nowIso } from '@/lib/utils'
 
 /**
@@ -36,6 +37,8 @@ interface DocumentState {
   clearKeyframes: (objectId?: string) => void
   /** Ajusta a duração da timeline */
   setTimelineDuration: (duration: number) => void
+  /** Sincroniza a trajetória 3D da bola com os fundamentos do atleta */
+  syncBallAnimation: (targetPlayerId?: string) => { success: boolean; coachAdded?: boolean }
 }
 
 const touch = (ex: Exercise, changes: Partial<Exercise>): Exercise => ({ ...ex, ...changes, updatedAt: nowIso() })
@@ -242,6 +245,27 @@ export const useDocumentStore = create<DocumentState>()(
             }),
           }
         }),
+
+      syncBallAnimation: (targetPlayerId) => {
+        const { exercise } = get()
+        const result = generateBallKeyframesForExercise(exercise, targetPlayerId)
+        if (!result) return { success: false }
+
+        const currentTimeline = exercise.timeline ?? { duration: 8, keyframes: {} }
+        set((s) => ({
+          exercise: touch(s.exercise, {
+            objects: result.updatedObjects,
+            timeline: {
+              ...currentTimeline,
+              keyframes: {
+                ...currentTimeline.keyframes,
+                [result.ballId]: result.ballKeyframes,
+              },
+            },
+          }),
+        }))
+        return { success: true, coachAdded: result.coachAdded }
+      },
     }),
     {
       partialize: (s) => ({ exercise: s.exercise }),
